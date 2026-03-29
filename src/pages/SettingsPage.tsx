@@ -62,7 +62,7 @@ export default function SettingsPage() {
             <div>
               <p className="text-sm font-medium text-gray-700">Member Since</p>
               <p className="text-sm text-gray-500">
-                {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                {(user as any)?.createdAt ? new Date((user as any).createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
               </p>
             </div>
           </div>

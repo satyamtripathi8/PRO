@@ -3,7 +3,6 @@ import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'ligh
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { marketApi } from '../../lib/api';
 import { RefreshCw, Maximize2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface CandleData {
   time: number;

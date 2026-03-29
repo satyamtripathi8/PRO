@@ -50,7 +50,6 @@ export default function LandingPage() {
       {/* Sticky Navbar */}
       <Navbar
         onFaqClick={() => scrollTo(faqRef)}
-        onNotifyClick={() => scrollTo(earlyAccessRef)}
       />
 
       {/* Hero Section */}

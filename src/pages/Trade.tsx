@@ -221,7 +221,6 @@ function getResponsiveVisibleCount() {
 
 // ─── Main Trade Page ──────────────────────────────────────────────────────────
 export default function Trade() {
-  const navigate = useNavigate();
   const location = useLocation();
   
   const [view, setView] = useState<'explore' | 'detail'>('explore');

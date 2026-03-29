@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { X, Settings, Download, Share2, Maximize2 } from 'lucide-react';
+import { X, Settings, Download, Share2 } from 'lucide-react';
 import CandlestickChart from '../components/trade/CandlestickChart';
 import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
 

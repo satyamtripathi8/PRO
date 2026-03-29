@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Medal, TrendingUp, Shield, Target, BarChart3, Users, Clock, RefreshCw } from 'lucide-react';
+import { Trophy, TrendingUp, Shield, Target, BarChart3, Users, Clock, RefreshCw } from 'lucide-react';
 import { leaderboardApi } from '../lib/api';
 
 interface LeaderboardEntry {

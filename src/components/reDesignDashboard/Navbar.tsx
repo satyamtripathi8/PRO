@@ -5,10 +5,9 @@ import { Menu, X, LogIn } from "lucide-react";
 
 type NavbarProps = {
   onFaqClick?: () => void;
-  onNotifyClick?: () => void;
 };
 
-export default function Navbar({ onFaqClick, onNotifyClick }: NavbarProps) {
+export default function Navbar({ onFaqClick }: NavbarProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();

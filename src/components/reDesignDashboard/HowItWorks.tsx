@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactElement } from "react";
+import React, { forwardRef, type ReactElement } from "react";
 import { UserPlus, BookOpen, LineChart, Wallet, Rocket } from "lucide-react";
 
 interface Step {
@@ -9,7 +9,7 @@ interface Step {
   active?: boolean;
 }
 
-const HowItWorks = forwardRef<HTMLDivElement>((props, ref) => {
+const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
   const steps: Step[] = [
     {
       icon: <UserPlus />,
@@ -87,8 +87,7 @@ const HowItWorks = forwardRef<HTMLDivElement>((props, ref) => {
                     }
                   `}
                 >
-                  {/* Icon */}
-                  {React.cloneElement(step.icon, {
+                  {React.cloneElement(step.icon as React.ReactElement<any>, {
                     className: `
                       w-10 h-10 transition-all duration-500
                       group-hover:rotate-6 group-hover:scale-125
