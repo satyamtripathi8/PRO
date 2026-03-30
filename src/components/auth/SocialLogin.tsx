@@ -3,7 +3,8 @@ import googleLogo from "../../assets/google.png"
 export default function SocialLogin() {
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth endpoint
-    window.location.href = 'http://localhost:3000/api/auth/google';
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    window.location.href = `${baseUrl}/api/auth/google`;
   };
 
   return (
