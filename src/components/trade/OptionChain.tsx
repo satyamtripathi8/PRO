@@ -70,7 +70,7 @@ export default function OptionChain({ symbol, spotPrice, onOptionClick }: Props)
   useEffect(() => {
     fetchChain();
     // Auto-refresh every 5 seconds for real-time data
-    const interval = setInterval(fetchChain, 5000);
+    const interval = setInterval(fetchChain, 10000);
     return () => clearInterval(interval);
   }, [fetchChain]);
 

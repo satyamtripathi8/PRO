@@ -395,7 +395,7 @@ export default function OptionChainPage() {
   // Initial load + 3s refresh for option chain 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000); // 3s — faster refresh
+    const interval = setInterval(fetchData, 10000); // 10s — safer refresh
     return () => clearInterval(interval);
   }, [fetchData]);
 

@@ -21,7 +21,7 @@ export interface QuoteData {
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const WS_URL = WS_BASE_URL;
-const POLL_INTERVAL = 5_000;       // Fallback polling: 5s (only when WS is down)
+const POLL_INTERVAL = 15_000;      // Fallback polling: 15s (safer when WS is down)
 const RECONNECT_DELAY = 2_000;     // Reconnect after 2s on WS drop
 const MAX_RECONNECT = 10;          // Max auto-reconnect attempts
 const BATCH_SIZE = 25;
