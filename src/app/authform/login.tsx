@@ -49,6 +49,7 @@ export default function LoginPage() {
   }, [resendCooldown]);
 
   const handleSubmit = async () => {
+    if (loading) return;
     setError("");
     setSuccess("");
     if (!email || !password || (!isLogin && !name)) {
