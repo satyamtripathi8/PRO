@@ -5,9 +5,10 @@ import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, ReferenceLine } from 'recharts';
 import { marketApi, ordersApi } from '../lib/api';
+import { WS_BASE_URL } from '../lib/config';
 import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
 
-const WS_URL = `ws://${window.location.hostname}:${import.meta.env.VITE_API_PORT || 3000}/ws`;
+const WS_URL = WS_BASE_URL;
 
 // Format helpers
 function fmt(n: number) {

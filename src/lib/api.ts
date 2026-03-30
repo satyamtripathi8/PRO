@@ -1,5 +1,6 @@
-const apiUrl = import.meta.env.VITE_API_URL;
-const BASE = apiUrl ? `${apiUrl}/api` : '/api';
+import { API_BASE_URL } from './config';
+
+const BASE = `${API_BASE_URL}/api`;
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${url}`, {
     credentials: 'include',

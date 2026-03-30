@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '../lib/config';
 
-const baseUrl = import.meta.env.VITE_API_URL || '';
-const API = baseUrl ? `${baseUrl}/api` : '/api';
+const API = `${API_BASE_URL}/api`;
 
 // ─── API helpers ─────────────────────────────────────────────────────────────
 async function api(path: string, opts?: RequestInit) {

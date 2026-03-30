@@ -1,10 +1,11 @@
 import googleLogo from "../../assets/google.png"
 
+import { API_BASE_URL } from '../../lib/config';
+
 export default function SocialLogin() {
   const handleGoogleLogin = () => {
-    // Redirect to backend Google OAuth endpoint
-    const baseUrl = import.meta.env.VITE_API_URL || '';
-    window.location.href = `${baseUrl}/api/auth/google`;
+    // Point directly to backend API
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   return (

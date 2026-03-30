@@ -3,6 +3,7 @@ import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'ligh
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { marketApi } from '../../lib/api';
 import { RefreshCw, Maximize2 } from 'lucide-react';
+import { WS_BASE_URL } from '../../lib/config';
 
 interface CandleData {
   time: number;
@@ -135,7 +136,7 @@ export default function CandlestickChart({ symbol, range = '1D', height = 400, l
 
     // 4. Start WebSocket for live ticks (1D only, only if no livePrice prop)
     if (range === '1D' && livePrice === undefined) {
-      const WS_URL = `ws://${window.location.hostname}:${import.meta.env.VITE_API_PORT || 3000}/ws`;
+      const WS_URL = WS_BASE_URL;
       const connect = () => {
         if (!mountedRef.current) return;
         const ws = new WebSocket(WS_URL);
