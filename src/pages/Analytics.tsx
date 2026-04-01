@@ -164,7 +164,7 @@ function PnLHistoryTab() {
 
       {/* Table */}
       {history.length > 0 && (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
               <tr>
@@ -314,7 +314,7 @@ export default function Analytics() {
     : 0;
 
   return (
-    <main className="p-6 space-y-6 max-w-7xl mx-auto w-full">
+    <main className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold">Analytics</h1>

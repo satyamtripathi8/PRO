@@ -31,11 +31,14 @@ export default function Dashboard() {
       walletApi.getHoldings().then(res => setHoldings(res.data || [])).catch(() => {});
       portfolioApi.getOverview().then(res => setPortfolio(res.data || null)).catch(() => {});
       leaderboardApi.get().then(res => {
-        const lb = (res.data || []).slice(0, 5).map((u: any, i: number) => ({
+        // Backend sends { data: { data: [...], filter, limit } }
+        const rawData = res?.data?.data || res?.data || [];
+        const entries = Array.isArray(rawData) ? rawData : [];
+        const lb = entries.slice(0, 5).map((u: any, i: number) => ({
           id: i + 1,
           rank: `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}`,
-          name: u.name,
-          value: Math.round(u.winRate),
+          name: u.name || 'Unknown',
+          value: Math.round(u.winRate || 0),
         }));
         setLeaderboardData(lb);
       }).catch(() => {});
@@ -102,7 +105,7 @@ export default function Dashboard() {
   });
 
   return (
-    <main className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto w-full">
+    <main className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
       {/* Portfolio Overview - now shows real P&L */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <PortfolioCard
@@ -116,7 +119,7 @@ export default function Dashboard() {
       </section>
 
       {/* Portfolio Stats - Real data */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border hover:shadow-md transition-shadow">
           <p className="text-sm text-gray-500">Total Portfolio Value</p>
           <p className="text-2xl font-semibold">₹{totalPortfolioValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</p>

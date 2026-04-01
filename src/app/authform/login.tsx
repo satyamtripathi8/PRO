@@ -128,7 +128,9 @@ export default function LoginPage() {
       setError("Please enter the 6-digit code");
       return;
     }
+    if (loading) return; // Prevent double-submit
 
+    console.log('[OTP] Verifying code for:', verificationEmail);
     setError("");
     setLoading(true);
     try {
@@ -136,6 +138,7 @@ export default function LoginPage() {
       // After email verify, fetch user role from context to redirect properly
       navigate("/Home");
     } catch (err: any) {
+      console.error('[OTP] Verify failed:', err);
       setError(err.message || "Invalid verification code");
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
@@ -145,18 +148,20 @@ export default function LoginPage() {
   };
 
   const handleResendOTP = async () => {
-    if (resendCooldown > 0) return;
+    if (resendCooldown > 0 || loading) return;
 
+    console.log('[OTP] Resending OTP to:', verificationEmail);
     setError("");
     setLoading(true);
     try {
       await resendOTP(verificationEmail);
-      setSuccess("Verification code sent!");
+      setSuccess("Verification code sent! Check your inbox.");
       setResendCooldown(60);
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
     } catch (err: any) {
-      setError(err.message || "Failed to resend code");
+      console.error('[OTP] Resend failed:', err);
+      setError(err.message || "Failed to resend code. Please try again.");
     } finally {
       setLoading(false);
     }

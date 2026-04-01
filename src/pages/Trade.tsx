@@ -350,9 +350,9 @@ export default function Trade() {
     <div className="flex flex-col bg-gray-50 min-h-screen w-full overflow-x-hidden">
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-20">
-        <div className="px-6 py-4 flex items-center justify-between">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Trade Route</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Trade Route</h1>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-sm text-gray-500">Real-time market data</span>
               {lastUpdated && (
@@ -363,22 +363,23 @@ export default function Trade() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             {/* Quick Stats */}
-            <div className="flex gap-4">
+            <div className="flex gap-2 sm:gap-4">
               <button
                 onClick={() => setShowPortfolio(!showPortfolio)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${showPortfolio ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${showPortfolio ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
               >
                 <Package size={18} />
-                <span className="text-sm font-medium">{holdings.length} Holdings</span>
+                <span className="font-medium hidden sm:inline">{holdings.length} Holdings</span>
+                <span className="font-medium sm:hidden">{holdings.length}</span>
               </button>
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${showHistory ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${showHistory ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
               >
                 <History size={18} />
-                <span className="text-sm font-medium">History</span>
+                <span className="font-medium hidden sm:inline">History</span>
               </button>
             </div>
             {walletBalance !== null && (
@@ -397,7 +398,7 @@ export default function Trade() {
                 placeholder="Search stocks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-64 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 w-full sm:w-48 md:w-64 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
               />
               {/* Search Dropdown */}
               {searchResults.length > 0 && (
@@ -422,7 +423,7 @@ export default function Trade() {
         </div>
 
         {/* Index cards with simple button navigation */}
-        <div className="px-6 pb-4">
+        <div className="px-3 sm:px-6 pb-4">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIndexPage(prev => Math.max(prev - 1, 0))}
@@ -498,7 +499,7 @@ export default function Trade() {
 
       {/* Portfolio Panel */}
       {showPortfolio && holdings.length > 0 && (
-        <div className="mx-6 mt-4 bg-white rounded-xl border p-4">
+        <div className="mx-3 sm:mx-6 mt-4 bg-white rounded-xl border p-3 sm:p-4">
           <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
             <Package size={20} /> Your Holdings
           </h3>
@@ -538,7 +539,7 @@ export default function Trade() {
 
       {/* Trade History Panel */}
       {showHistory && recentOrders.length > 0 && (
-        <div className="mx-6 mt-4 bg-white rounded-xl border p-4">
+        <div className="mx-3 sm:mx-6 mt-4 bg-white rounded-xl border p-3 sm:p-4">
           <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
             <History size={20} /> Recent Trades
           </h3>
@@ -569,7 +570,7 @@ export default function Trade() {
       )}
 
       {/* Sector Tabs */}
-      <div className="px-6 mt-4 flex gap-2 overflow-x-auto scrollbar-hide">
+      <div className="px-3 sm:px-6 mt-4 flex gap-2 overflow-x-auto scrollbar-hide pb-1">
         {SECTORS.map(sector => (
           <button
             key={sector}
@@ -586,7 +587,7 @@ export default function Trade() {
       </div>
 
       {/* Company Cards Grid */}
-      <div className="px-6 py-4">
+      <div className="px-3 sm:px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">
             {selectedSector === 'All' ? 'All Stocks' : `${selectedSector} Sector`}
@@ -710,17 +711,17 @@ function StockDetailView({
   return (
     <div className="flex flex-col bg-white min-h-screen w-full overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4 sticky top-0 z-10">
-        <div className="flex items-center gap-4">
+      <div className="bg-white border-b px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <button
             onClick={onBack}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900">{stockName}</h1>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{stockName}</h1>
               <span className={`text-xs px-2 py-1 rounded font-semibold ${
                 isIndex ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
               }`}>
@@ -732,21 +733,21 @@ function StockDetailView({
               </span>
             </div>
             {q && (
-              <div className="flex items-baseline gap-4 mt-2">
-                <span className="text-3xl font-bold text-gray-900">₹{fmt(q.price)}</span>
-                <span className={`text-lg font-semibold flex items-center gap-1 ${isUp ? 'text-green-600' : 'text-red-500'}`}>
+              <div className="flex items-baseline gap-2 sm:gap-4 mt-1 sm:mt-2 flex-wrap">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900">₹{fmt(q.price)}</span>
+                <span className={`text-sm sm:text-lg font-semibold flex items-center gap-1 ${isUp ? 'text-green-600' : 'text-red-500'}`}>
                   {isUp ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                   {isUp ? '+' : ''}₹{q.change?.toFixed(2)} ({isUp ? '+' : ''}{q.percentage?.toFixed(2)}%)
                 </span>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {/* Option Chain Button for F&O Indices - Navigate to dedicated page */}
             {isIndex && FO_INDICES.includes(symbol) && (
               <button
                 onClick={() => navigate(`/Home/options/${symbol}`)}
-                className="px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md"
+                className="px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold rounded-lg transition-colors bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md"
               >
                 Option Chain
               </button>
@@ -755,13 +756,13 @@ function StockDetailView({
               <>
                 <button
                   onClick={() => navigate(`/Home/sell/${symbol.replace(/^(NSE:|BSE:)/, '')}`)}
-                  className="px-6 py-2.5 font-semibold rounded-lg transition-colors bg-red-100 text-red-600 hover:bg-red-200"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 font-semibold rounded-lg transition-colors bg-red-100 text-red-600 hover:bg-red-200 text-sm sm:text-base"
                 >
                   Sell
                 </button>
                 <button
                   onClick={() => setTradeSide('BUY')}
-                  className={`px-6 py-2.5 font-semibold rounded-lg transition-colors ${
+                  className={`px-4 sm:px-6 py-2 sm:py-2.5 font-semibold rounded-lg transition-colors text-sm sm:text-base ${
                     tradeSide === 'BUY' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'
                   }`}
                 >
@@ -777,12 +778,12 @@ function StockDetailView({
         {/* Main Chart Area */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Timeframe Selector */}
-          <div className="flex items-center gap-2 px-6 py-3 border-b bg-gray-50">
+          <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 border-b bg-gray-50 overflow-x-auto">
             {['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'].map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
                   timeframe === tf
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-600 hover:bg-white hover:shadow'
@@ -794,8 +795,8 @@ function StockDetailView({
           </div>
 
           {/* Chart */}
-          <div className="flex-1 p-4">
-            <div className="h-full w-full min-h-[400px] rounded-lg overflow-hidden border">
+          <div className="flex-1 p-2 sm:p-4">
+            <div className="h-full w-full min-h-[280px] sm:min-h-[400px] rounded-lg overflow-hidden border">
               <ChartErrorBoundary>
                 <CandlestickChart 
                   symbol={symbol} 
@@ -810,9 +811,9 @@ function StockDetailView({
 
           {/* Stats Grid */}
           {q && (
-            <div className="px-6 py-4 border-t bg-gray-50">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-t bg-gray-50">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Market Statistics</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
                 {[
                   { label: 'Open', value: `₹${fmt(q.open)}` },
                   { label: 'High', value: `₹${fmt(q.high)}`, color: 'text-green-600' },
@@ -835,7 +836,7 @@ function StockDetailView({
 
         {/* Right Sidebar - Trade Form */}
         {tradeSide && !isIndex && (
-          <div className="w-full lg:w-[360px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l bg-gray-50 p-6 overflow-visible lg:overflow-y-auto">
+          <div className="w-full lg:w-[360px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l bg-gray-50 p-3 sm:p-6 overflow-visible lg:overflow-y-auto">
             <div className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-bold ${tradeSide === 'BUY' ? 'text-green-700' : 'text-red-600'}`}>

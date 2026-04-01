@@ -2,7 +2,10 @@ import { API_BASE_URL } from './config';
 
 const BASE = `${API_BASE_URL}/api`;
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${BASE}${url}`, {
+  const fullUrl = `${BASE}${url}`;
+  console.log(`[API] ${options.method || 'GET'} ${url}`);
+  
+  const res = await fetch(fullUrl, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
@@ -14,6 +17,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   const json = await res.json();
 
   if (!res.ok) {
+    console.error(`[API] ${url} => ${res.status}:`, json?.message || json);
     throw new Error(json.message || 'Request failed');
   }
 
