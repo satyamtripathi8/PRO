@@ -9,7 +9,7 @@ const Education: React.FC = () => {
   ];
 
   return (
-    <section className="py-32 bg-brand-50/30">
+    <section className="py-20 bg-brand-50/30">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-10">
         <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
           <div className="order-2 lg:order-1">
@@ -20,7 +20,7 @@ const Education: React.FC = () => {
               </span>
             </div>
 
-            <h2 className="mb-8 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl text-slate-900">
+            <h2 className="mb-6 text-3xl font-bold leading-snug sm:text-4xl md:text-5xl lg:text-5xl text-slate-900">
               Learn discipline <br />
               with Mentor AI and experienced traders
             </h2>

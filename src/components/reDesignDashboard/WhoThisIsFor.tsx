@@ -23,11 +23,11 @@ export default function WhoThisIsFor() {
   ];
 
   return (
-    <section className="relative overflow-hidden py-32 bg-gradient-to-b from-white to-sky-50">
+    <section className="relative overflow-hidden py-20 bg-gradient-to-b from-white to-sky-50">
       <div className="max-w-7xl px-6 mx-auto">
         {/* Heading */}
         <div className="mb-20 text-center">
-          <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-slate-900">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-5xl text-slate-900">
             Who This Is For
           </h2>
           <p className="text-lg sm:text-xl lg:text-2xl text-slate-500">

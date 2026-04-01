@@ -22,25 +22,25 @@ const XIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const Footer: React.FC = () => {
   return (
-    <footer className="pt-20 pb-10 border-t bg-brand-50 border-brand-100">
-      <div className="px-4 mx-auto text-center max-w-7xl sm:px-6 lg:px-10">
+    <footer className="pt-12 pb-8 border-t bg-brand-50 border-brand-100">
+        <div className="px-4 mx-auto text-center max-w-6xl sm:px-6 lg:px-8">
 
         {/* Brand Name */}
         <div className="mb-8">
-          <span className="text-3xl font-bold tracking-tight text-slate-900 lg:text-4xl">
+          <span className="text-2xl font-bold tracking-tight text-slate-900 lg:text-3xl">
             TREVOROS
           </span>
         </div>
 
         {/* Social Icons */}
-        <div className="flex items-center justify-center gap-5 mb-8">
+        <div className="flex items-center justify-center gap-4 mb-6">
           {/* Instagram */}
           <a
             href={SOCIAL_LINKS.instagram}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Follow us on Instagram"
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-brand-600 hover:border-brand-400 hover:bg-brand-50 transition-all duration-300 hover:scale-110 shadow-sm"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-brand-600 hover:border-brand-400 hover:bg-brand-50 transition-all duration-300 hover:scale-105 shadow-sm"
           >
             <Instagram className="w-5 h-5" />
           </a>

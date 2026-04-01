@@ -36,39 +36,39 @@ export default function WhatWeDo() {
   ];
 
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-b from-white to-sky-50">
+    <section className="relative py-20 overflow-hidden bg-gradient-to-b from-white to-sky-50">
       {/* Subtle Background Glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-150px] left-1/3 w-[500px] h-[500px] bg-sky-200/30 rounded-full blur-3xl opacity-40"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl px-6 mx-auto">
+      <div className="relative z-10 max-w-6xl px-4 mx-auto">
         {/* Heading */}
-        <div className="mb-20 text-center">
-          <p className="uppercase tracking-[0.25em] text-sky-600 text-base font-semibold mb-4">
+        <div className="mb-12 text-center">
+          <p className="uppercase tracking-[0.2em] text-sky-600 text-sm font-semibold mb-3">
             What We Do
           </p>
 
-          <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-slate-900">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-4xl lg:text-5xl text-slate-900">
             Earn Access to Capital Through Discipline
           </h2>
 
-          <p className="max-w-3xl mx-auto text-lg leading-relaxed sm:text-xl lg:text-2xl text-slate-600">
+          <p className="max-w-2xl mx-auto text-base leading-relaxed sm:text-lg lg:text-lg text-slate-600">
             Our evaluation framework is designed to measure structure, composure
             and performance consistency — not luck.
           </p>
         </div>
 
         {/* Cards */}
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {cards.map((card, index) => {
             const Icon = card.icon;
 
             return (
-              <div
-                key={index}
-                className="relative p-10 transition-all duration-500 border group bg-white/80 backdrop-blur-sm border-sky-100 rounded-3xl hover:-translate-y-4 hover:shadow-2xl"
-              >
+                <div
+                  key={index}
+                  className="relative p-8 transition-all duration-500 border group bg-white/80 backdrop-blur-sm border-sky-100 rounded-2xl hover:-translate-y-2 hover:shadow-xl"
+                >
                 {/* Icon Circle */}
                 <div className="flex items-center justify-center mb-8 transition-all duration-500 w-16 h-16 rounded-xl bg-sky-100 group-hover:bg-sky-500 group-hover:scale-110">
                   <Icon className="transition-colors duration-500 w-8 h-8 text-sky-600 group-hover:text-white" />
