@@ -29,6 +29,8 @@ import LeaderboardPage from './pages/LeaderboardPage'
 import AdminDashboard from './pages/AdminDashboard'
 import LandingPage from './pages/LandingPage'
 import { useAuth } from './context/AuthContext'
+import { useToast } from './hooks/useToast'
+import ToastContainer from './components/common/Toast'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -46,8 +48,11 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const { toasts, dismissToast } = useToast();
+
   return (
     <>
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthLayout />} >

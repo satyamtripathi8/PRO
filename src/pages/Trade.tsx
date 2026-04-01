@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, TrendingUp, TrendingDown, ArrowLeft, Wallet, Package, History, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Wallet, Package, History, RefreshCw, ChevronLeft, ChevronRight, ExternalLink, Pencil } from 'lucide-react';
 import { useMarketData } from '../hooks/useMarketData';
 import { marketApi, ordersApi, walletApi } from '../lib/api';
 import CandlestickChart from '../components/trade/CandlestickChart';
 import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
+import ChartDrawingOverlay from '../components/trade/ChartDrawingOverlay';
+import BackButton from '../components/common/BackButton';
+import OptionChainPanel from '../components/trade/OptionChainPanel';
+import { showToastGlobal } from '../hooks/useToast';
 
 // ─── Symbol Config ────────────────────────────────────────────────────────────
 
@@ -342,6 +346,7 @@ export default function Trade() {
           walletApi.getHoldings().then(res => setHoldings(res.data ?? []));
           ordersApi.list({ limit: 10 }).then(res => setRecentOrders(res.data?.data ?? []));
         }}
+        holdings={holdings}
       />
     );
   }
@@ -644,13 +649,15 @@ export default function Trade() {
 function StockDetailView({
   symbol,
   quotes,
-  onBack,
-  onOrderPlaced
+  onBack: _onBack,
+  onOrderPlaced,
+  holdings,
 }: {
   symbol: string;
   quotes: Record<string, any>;
   onBack: () => void;
   onOrderPlaced?: () => void;
+  holdings?: any[];
 }) {
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState('1D');
@@ -659,10 +666,44 @@ function StockDetailView({
   const [orderType, setOrderType] = useState<'MARKET' | 'LIMIT'>('MARKET');
   const [price, setPrice] = useState(0);
   const [stopLoss, setStopLoss] = useState<number | null>(null);
+  const [enableStopLoss, setEnableStopLoss] = useState(false);
   const [triggerPrice, setTriggerPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [showOptionPanel, setShowOptionPanel] = useState(false);
+  const [showDrawing, setShowDrawing] = useState(false);
+  const [chartCoords, setChartCoords] = useState<{
+    priceToCoor: (price: number) => number | null;
+    coorToPrice: (y: number) => number | null;
+  } | null>(null);
+  const chartWrapperRef = useRef<HTMLDivElement>(null);
+  const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
+
+  // Track chart container dimensions for drawing overlay
+  useEffect(() => {
+    const el = chartWrapperRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setChartDimensions({ width: entry.contentRect.width, height: entry.contentRect.height });
+      }
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const handleDrawingSLChange = useCallback((price: number | null) => {
+    if (price !== null && price > 0) {
+      setStopLoss(price);
+      setEnableStopLoss(true);
+    }
+  }, []);
   const q = quotes[symbol];
+
+  // Find holding for P&L overlay
+  const holding = holdings?.find((h: any) => (h.symbol || '').toUpperCase() === symbol.toUpperCase());
+  const entryPrice = holding ? Number(holding.avgPrice) : undefined;
+  const holdingQty = holding ? Number(holding.quantity) : undefined;
   const isUp = (q?.percentage ?? 0) >= 0;
   const isIndex = INDICES.some(i => i.symbol === symbol);
   const stockName = COMPANIES.find(c => c.symbol === symbol)?.label ||
@@ -687,9 +728,10 @@ function StockDetailView({
         orderType,
         quantity: qty,
         entryPrice: execPrice,
-        stopLoss: stopLoss || undefined,
+        stopLoss: enableStopLoss ? (stopLoss || undefined) : undefined,
         triggerPrice: triggerPrice || undefined,
       });
+      showToastGlobal(`${tradeSide} order placed: ${qty} ${symbol} @ ₹${execPrice?.toFixed(2)}`, 'success');
       setMessage(`✓ ${tradeSide} order placed successfully!`);
       onOrderPlaced?.();
       setTimeout(() => {
@@ -697,6 +739,7 @@ function StockDetailView({
         setMessage('');
         setQty(1);
         setStopLoss(null);
+        setEnableStopLoss(false);
         setTriggerPrice(null);
       }, 2000);
     } catch (e: any) {
@@ -709,16 +752,11 @@ function StockDetailView({
   const totalValue = qty * (orderType === 'MARKET' ? (q?.price ?? 0) : price);
 
   return (
-    <div className="flex flex-col bg-white min-h-screen w-full overflow-x-hidden">
+    <div className="flex flex-col bg-white min-h-screen w-full overflow-x-hidden animate-fade-in">
       {/* Header */}
       <div className="bg-white border-b px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <button
-            onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft size={20} />
-          </button>
+          <BackButton fallbackPath="/Home/trade" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{stockName}</h1>
@@ -743,10 +781,18 @@ function StockDetailView({
             )}
           </div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            {/* Option Chain Button for F&O Indices - Navigate to dedicated page */}
+            {/* Open in new tab */}
+            <button
+              onClick={() => window.open(`/Home/trade/fullscreen?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}`, '_blank')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
+              title="Open chart in new tab"
+            >
+              <ExternalLink size={18} />
+            </button>
+            {/* Option Chain Button for F&O Indices - Opens side panel */}
             {isIndex && FO_INDICES.includes(symbol) && (
               <button
-                onClick={() => navigate(`/Home/options/${symbol}`)}
+                onClick={() => setShowOptionPanel(true)}
                 className="px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold rounded-lg transition-colors bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md"
               >
                 Option Chain
@@ -792,11 +838,24 @@ function StockDetailView({
                 {tf}
               </button>
             ))}
+            <div className="ml-auto pl-2">
+              <button
+                onClick={() => setShowDrawing(!showDrawing)}
+                className={`p-2 rounded-lg transition-colors ${
+                  showDrawing
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'text-gray-500 hover:bg-white hover:shadow'
+                }`}
+                title="Drawing tools"
+              >
+                <Pencil size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Chart */}
           <div className="flex-1 p-2 sm:p-4">
-            <div className="h-full w-full min-h-[280px] sm:min-h-[400px] rounded-lg overflow-hidden border">
+            <div ref={chartWrapperRef} className="relative h-full w-full min-h-[280px] sm:min-h-[400px] rounded-lg overflow-hidden border">
               <ChartErrorBoundary>
                 <CandlestickChart 
                   symbol={symbol} 
@@ -804,8 +863,24 @@ function StockDetailView({
                   height={400} 
                   livePrice={q?.price}
                   onFullscreen={() => navigate('/Home/trade/fullscreen', { state: { symbol, timeframe } })}
+                  entryPrice={entryPrice}
+                  holdingQty={holdingQty}
+                  stopLossPrice={enableStopLoss && stopLoss ? stopLoss : undefined}
+                  onChartReady={setChartCoords}
                 />
               </ChartErrorBoundary>
+              {showDrawing && chartCoords && chartDimensions.width > 0 && (
+                <ChartDrawingOverlay
+                  symbol={symbol}
+                  width={chartDimensions.width}
+                  height={chartDimensions.height}
+                  priceToCoor={chartCoords.priceToCoor}
+                  coorToPrice={chartCoords.coorToPrice}
+                  visible={showDrawing}
+                  onClose={() => setShowDrawing(false)}
+                  onStopLossChange={handleDrawingSLChange}
+                />
+              )}
             </div>
           </div>
 
@@ -911,36 +986,62 @@ function StockDetailView({
                 </div>
               </div>
 
-              {/* Stop Loss & Trigger Price */}
-              <div className="grid grid-cols-2 gap-3 mb-5">
-                <div>
-                  <label className="text-xs text-gray-500 block mb-2">Stop Loss</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                    <input
-                      type="number"
-                      step="0.05"
-                      value={stopLoss ?? ''}
-                      onChange={(e) => setStopLoss(e.target.value ? +e.target.value : null)}
-                      placeholder="Optional"
-                      className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    />
-                  </div>
+              {/* Stop Loss Toggle & Fields */}
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-xs text-gray-500 font-medium">Stop Loss</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEnableStopLoss(!enableStopLoss);
+                      if (enableStopLoss) { setStopLoss(null); setTriggerPrice(null); }
+                    }}
+                    className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${
+                      enableStopLoss ? 'bg-blue-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                      enableStopLoss ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
                 </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-2">Trigger Price</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                    <input
-                      type="number"
-                      step="0.05"
-                      value={triggerPrice ?? ''}
-                      onChange={(e) => setTriggerPrice(e.target.value ? +e.target.value : null)}
-                      placeholder="Optional"
-                      className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    />
+                {enableStopLoss && (
+                  <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
+                    <div>
+                      <label className="text-xs text-gray-500 block mb-2">SL Price</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                        <input
+                          type="number"
+                          step="0.05"
+                          value={stopLoss ?? ''}
+                          onChange={(e) => setStopLoss(e.target.value ? +e.target.value : null)}
+                          placeholder="e.g. 1250"
+                          className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-red-400 text-sm border-red-200"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 block mb-2">Trigger Price</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                        <input
+                          type="number"
+                          step="0.05"
+                          value={triggerPrice ?? ''}
+                          onChange={(e) => setTriggerPrice(e.target.value ? +e.target.value : null)}
+                          placeholder="Optional"
+                          className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
+                    </div>
+                    {stopLoss && stopLoss > 0 && q?.price && (
+                      <div className="col-span-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        🛑 SL at ₹{stopLoss.toFixed(2)} — {((q.price - stopLoss) / q.price * 100).toFixed(1)}% below current price
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Summary */}
@@ -992,6 +1093,14 @@ function StockDetailView({
           </div>
         )}
       </div>
+
+      {/* Option Chain Side Panel */}
+      <OptionChainPanel
+        isOpen={showOptionPanel}
+        onClose={() => setShowOptionPanel(false)}
+        symbol={symbol}
+        spotPrice={q?.price}
+      />
     </div>
   );
 }

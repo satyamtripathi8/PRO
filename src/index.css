@@ -2,10 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+	scroll-behavior: smooth;
+}
+
 body {
 	background-color: #f8fafc;
 	color: #0f172a;
 	overflow-x: hidden;
+	max-width: 100vw;
 }
 
 /* Hide scrollbar for horizontal scroll containers */
@@ -15,4 +20,60 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
 	display: none;
+}
+
+/* Skeleton shimmer animation */
+@keyframes skeleton-shimmer {
+	0% { transform: translateX(-100%); }
+	100% { transform: translateX(100%); }
+}
+.skeleton-shimmer {
+	animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Toast slide-in animation */
+@keyframes toast-enter {
+	from { transform: translateX(100%); opacity: 0; }
+	to { transform: translateX(0); opacity: 1; }
+}
+.toast-enter {
+	animation: toast-enter 0.3s ease-out;
+}
+
+/* ─── Trade & Chart Animations ─────────────────────── */
+@keyframes fade-in-up {
+	from { opacity: 0; transform: translateY(12px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+	animation: fade-in-up 0.3s ease-out both;
+}
+
+@keyframes slide-in-right {
+	from { transform: translateX(100%); }
+	to { transform: translateX(0); }
+}
+.animate-slide-in-right {
+	animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes scale-in {
+	from { opacity: 0; transform: scale(0.95); }
+	to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+	animation: scale-in 0.2s ease-out both;
+}
+
+@keyframes fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+.animate-fade-in {
+	animation: fade-in 0.25s ease-out both;
+}
+
+/* Drawing toolbar hover glow */
+.drawing-toolbar-glow {
+	box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1), 0 4px 16px rgba(0, 0, 0, 0.08);
 }

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { walletApi, ordersApi } from "../lib/api";
 import { useMarketData } from "../hooks/useMarketData";
+import BackButton from "../components/common/BackButton";
+import { showToastGlobal } from "../hooks/useToast";
 
 function fmt(n: number) {
   return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(n);
@@ -86,6 +88,7 @@ export default function Sell() {
         entryPrice: execPrice,
       });
       setMessage('✓ Sell order placed successfully');
+      showToastGlobal(`Sold ${qty} ${symbol} @ ₹${execPrice.toFixed(2)}`, 'success');
       setTimeout(() => navigate('/Home/positions'), 800);
     } catch (e: any) {
       setError(e.message || 'Order failed');
@@ -107,12 +110,7 @@ export default function Sell() {
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft size={18} /> Back
-          </button>
+          <BackButton fallbackPath="/Home/positions" label="Back" />
           <button
             onClick={refetch}
             className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
