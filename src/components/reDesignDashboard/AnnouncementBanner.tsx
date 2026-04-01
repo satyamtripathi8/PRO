@@ -12,22 +12,14 @@ const AnnouncementBanner: React.FC = () => {
           </div>
 
           {/* Main Message */}
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-3">
-              <span className="px-4 py-1.5 text-sm font-bold tracking-wider bg-yellow-400 text-slate-900 rounded-full shadow-lg uppercase">
-                New
-              </span>
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-                MVP is Live!
-              </h3>
-            </div>
-            
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 mt-4">
+
             {/* Live Indicator */}
             <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full">
               <div className="relative flex items-center justify-center">
                 <div className="w-2.5 h-2.5 bg-green-400 rounded-full"></div>
               </div>
-              <span className="text-sm text-white font-semibold tracking-wide">LIVE NOW</span>
+              <span className="text-sm text-white font-semibold tracking-wide">MVP is LIVE</span>
             </div>
           </div>
         </div>
