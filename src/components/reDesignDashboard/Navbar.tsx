@@ -83,7 +83,7 @@ export default function Navbar({ onFaqClick }: NavbarProps) {
               "
             >
               <LogIn size={20} />
-              Sign In / Log In
+              Sign up
             </button>
           </div>
 
