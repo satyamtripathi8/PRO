@@ -129,13 +129,13 @@ const FAQ: React.FC = () => {
   };
 
   return (
-    <section className="py-32 bg-gradient-to-b from-sky-50 to-white">
+    <section className="py-20 bg-gradient-to-b from-sky-50 to-white">
       <div className="max-w-5xl px-6 mx-auto">
-        <h2 className="text-4xl font-bold text-center sm:text-5xl md:text-6xl lg:text-7xl text-slate-900 mb-16">
+        <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl lg:text-5xl text-slate-900 mb-12">
           Frequently Asked Questions
         </h2>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {faqData.map((cat, catIndex) => {
             const isCategoryOpen = activeCategory === catIndex;
 
@@ -146,7 +146,7 @@ const FAQ: React.FC = () => {
               >
                 <button
                   onClick={() => toggleCategory(catIndex)}
-                  className="flex items-center justify-between w-full px-8 py-6 text-xl font-semibold text-left transition text-slate-900 hover:bg-slate-50 lg:text-2xl"
+                  className="flex items-center justify-between w-full px-6 py-4 text-lg font-semibold text-left transition text-slate-900 hover:bg-slate-50 lg:text-xl"
                 >
                   {cat.category}
 

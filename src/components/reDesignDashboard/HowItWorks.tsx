@@ -42,17 +42,17 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
   ];
 
   return (
-    <section
-      ref={ref}
-      className="relative overflow-hidden py-32 bg-gradient-to-b from-white to-slate-50"
-    >
+      <section
+        ref={ref}
+        className="relative overflow-hidden py-20 bg-gradient-to-b from-white to-slate-50"
+      >
       {/* Background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-500/5 blur-3xl rounded-full"></div>
 
       <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-10">
         {/* Header */}
         <div className="mb-24 text-center opacity-0 animate-fadeInUp">
-          <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-slate-900">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-5xl text-slate-900">
             How it works
           </h2>
           <p className="max-w-3xl mx-auto text-lg sm:text-xl lg:text-2xl text-slate-600">

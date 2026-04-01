@@ -3,20 +3,20 @@ import platformImage from "../../assets/Built for serious traders.png";
 
 const PlatformPreview: React.FC = () => {
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-b from-brand-900 to-slate-950">
+    <section className="relative py-20 overflow-hidden bg-gradient-to-b from-brand-900 to-slate-950">
       {/* Soft Ambient Lighting */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-40 left-1/3 w-[600px] h-[600px] bg-brand-500/20 rounded-full blur-3xl opacity-40"></div>
-        <div className="absolute bottom-[-200px] right-1/4 w-[600px] h-[600px] bg-sky-500/10 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute -top-32 left-1/3 w-[400px] h-[400px] bg-brand-500/20 rounded-full blur-3xl opacity-40"></div>
+        <div className="absolute bottom-[-160px] right-1/4 w-[400px] h-[400px] bg-sky-500/10 rounded-full blur-3xl opacity-30"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl px-6 mx-auto text-center">
+      <div className="relative z-10 max-w-6xl px-4 mx-auto text-center">
         {/* Heading */}
-        <h2 className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+        <h2 className="mb-4 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl lg:text-5xl">
           Built for Serious Traders
         </h2>
 
-        <p className="max-w-4xl mx-auto mb-20 text-lg leading-relaxed sm:text-xl lg:text-2xl text-brand-100">
+        <p className="max-w-3xl mx-auto mb-12 text-base leading-relaxed sm:text-lg lg:text-lg text-brand-100">
           Engineered for speed, stability and execution precision — so your
           strategy performs exactly as intended.
         </p>
