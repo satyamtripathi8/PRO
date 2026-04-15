@@ -39,13 +39,10 @@ export default function AiChat() {
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        console.log('[AI Chat] Loading chat history...');
         const res = await aiApi.getChatHistory();
-        const msgs = res?.data?.messages || res?.data || [];
-        console.log('[AI Chat] Loaded', msgs.length, 'messages');
-        setMessages(Array.isArray(msgs) ? msgs : []);
+        setMessages(res.data?.messages || []);
       } catch (err: any) {
-        console.error('[AI Chat] Failed to load history:', err?.message);
+        console.error('Failed to load chat history:', err);
       } finally {
         setHistoryLoading(false);
       }
@@ -70,32 +67,21 @@ export default function AiChat() {
     setLoading(true);
 
     try {
-      console.log('[AI Chat] Sending message:', userMessage.substring(0, 50));
       const res = await aiApi.chat(userMessage);
-      const replyContent = res?.data?.reply || res?.data?.message || 'No response received';
       const assistantMsg: ChatMessage = {
         role: 'assistant',
-        content: replyContent,
+        content: res.data?.reply || 'No response',
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, assistantMsg]);
-      setDataContext(res?.data?.dataContext || '');
+      setDataContext(res.data?.dataContext || '');
     } catch (err: any) {
-      console.error('[AI Chat] Error:', err?.message);
-      // Map backend errors to user-friendly messages
-      let friendlyMessage = 'Something went wrong. Please try again.';
-      if (err.message?.includes('503') || err.message?.includes('unavailable')) {
-        friendlyMessage = 'The AI coaching service is temporarily unavailable. Please try again in a few minutes.';
-      } else if (err.message?.includes('422') || err.message?.includes('validation')) {
-        friendlyMessage = 'There was a data processing issue. Our team has been notified. Please try again.';
-      } else if (err.message?.includes('DB') || err.message?.includes('database') || err.message?.includes('prisma')) {
-        friendlyMessage = 'A database error occurred while fetching your data. Please try again shortly.';
-      } else if (err.message) {
-        friendlyMessage = err.message;
-      }
+      // Show the error but keep the user message since the backend saved it
       const errorMsg: ChatMessage = {
         role: 'assistant',
-        content: friendlyMessage,
+        content: err.message?.includes('503') || err.message?.includes('unavailable')
+          ? 'I apologize, but the AI coaching service is temporarily unavailable. Your message has been saved and I\'ll respond once the service is back online. Please try again in a few minutes.'
+          : (err.message || 'Something went wrong. Please try again.'),
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -127,7 +113,7 @@ export default function AiChat() {
   };
 
   return (
-    <main className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto w-full h-[calc(100vh-80px)] sm:h-[calc(100vh-120px)] flex flex-col">
+    <main className="p-4 md:p-6 max-w-4xl mx-auto w-full h-[calc(100vh-120px)] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">

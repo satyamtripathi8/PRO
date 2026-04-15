@@ -83,9 +83,9 @@ export default function Topbar({
   };
 
   return (
-    <div className="sticky top-0 z-40 px-3 sm:px-4 md:px-8 py-3 md:py-4 bg-white/70 backdrop-blur-xl border-b border-gray-200 shadow-sm">
+    <div className="sticky top-0 z-40 px-4 md:px-8 py-4 bg-white/70 backdrop-blur-xl border-b border-gray-200 shadow-sm">
       
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-4">
         
         {/* ============================== */}
         {/* 🔹 Search (Flexible Full Width) */}
@@ -93,7 +93,7 @@ export default function Topbar({
         <div ref={searchRef} className="relative flex-1 max-w-3xl mx-auto">
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 sm:gap-3 bg-white shadow-sm px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-gray-200 
+            className="flex items-center gap-3 bg-white shadow-sm px-5 py-3 rounded-2xl border border-gray-200 
                        focus-within:ring-2 focus-within:ring-blue-400 transition-all duration-300"
           >
             <Search size={18} className="text-gray-400" />
@@ -151,19 +151,15 @@ export default function Topbar({
         {/* ============================== */}
         {/* 🔹 Actions */}
         {/* ============================== */}
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           
-          <div className="hidden sm:block">
-            <IconButton onClick={onShuffle}>
-              <Shuffle size={18} />
-            </IconButton>
-          </div>
+          <IconButton onClick={onShuffle}>
+            <Shuffle size={18} />
+          </IconButton>
 
-          <div className="hidden sm:block">
-            <IconButton onClick={onRefresh} rotate>
-              <RefreshCw size={18} />
-            </IconButton>
-          </div>
+          <IconButton onClick={onRefresh} rotate>
+            <RefreshCw size={18} />
+          </IconButton>
 
           {/* Notification Button */}
           <div ref={notifRef} className="relative">
@@ -173,7 +169,7 @@ export default function Topbar({
             </IconButton>
 
             {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                   <h3 className="font-semibold text-gray-800 text-sm">Notifications</h3>
                   <button

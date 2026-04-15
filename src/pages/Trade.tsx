@@ -1,14 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, TrendingUp, TrendingDown, Wallet, Package, History, RefreshCw, ChevronLeft, ChevronRight, ExternalLink, Pencil } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, ArrowLeft, Wallet, Package, History, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMarketData } from '../hooks/useMarketData';
 import { marketApi, ordersApi, walletApi } from '../lib/api';
-import CandlestickChart from '../components/trade/CandlestickChart';
+import ProTradingChart from '../components/trade/ProTradingChart';
 import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
-import ChartDrawingOverlay from '../components/trade/ChartDrawingOverlay';
-import BackButton from '../components/common/BackButton';
-import OptionChainPanel from '../components/trade/OptionChainPanel';
-import { showToastGlobal } from '../hooks/useToast';
 
 // ─── Symbol Config ────────────────────────────────────────────────────────────
 
@@ -284,7 +280,7 @@ export default function Trade() {
         ]);
         setWalletBalance(walletRes.data?.balance ?? null);
         setHoldings(holdingsRes.data ?? []);
-        setRecentOrders(ordersRes.data?.data ?? []);
+        setRecentOrders(ordersRes.data ?? []);
       } catch {}
     };
     fetchData();
@@ -344,9 +340,8 @@ export default function Trade() {
         onOrderPlaced={() => {
           walletApi.get().then(res => setWalletBalance(res.data?.balance ?? null));
           walletApi.getHoldings().then(res => setHoldings(res.data ?? []));
-          ordersApi.list({ limit: 10 }).then(res => setRecentOrders(res.data?.data ?? []));
+          ordersApi.list({ limit: 10 }).then(res => setRecentOrders(res.data ?? []));
         }}
-        holdings={holdings}
       />
     );
   }
@@ -355,9 +350,9 @@ export default function Trade() {
     <div className="flex flex-col bg-gray-50 min-h-screen w-full overflow-x-hidden">
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-20">
-        <div className="px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Trade Route</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Trade Route</h1>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-sm text-gray-500">Real-time market data</span>
               {lastUpdated && (
@@ -368,23 +363,22 @@ export default function Trade() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
             {/* Quick Stats */}
-            <div className="flex gap-2 sm:gap-4">
+            <div className="flex gap-4">
               <button
                 onClick={() => setShowPortfolio(!showPortfolio)}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${showPortfolio ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${showPortfolio ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
               >
                 <Package size={18} />
-                <span className="font-medium hidden sm:inline">{holdings.length} Holdings</span>
-                <span className="font-medium sm:hidden">{holdings.length}</span>
+                <span className="text-sm font-medium">{holdings.length} Holdings</span>
               </button>
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${showHistory ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${showHistory ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
               >
                 <History size={18} />
-                <span className="font-medium hidden sm:inline">History</span>
+                <span className="text-sm font-medium">History</span>
               </button>
             </div>
             {walletBalance !== null && (
@@ -403,7 +397,7 @@ export default function Trade() {
                 placeholder="Search stocks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full sm:w-48 md:w-64 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 w-64 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
               />
               {/* Search Dropdown */}
               {searchResults.length > 0 && (
@@ -428,7 +422,7 @@ export default function Trade() {
         </div>
 
         {/* Index cards with simple button navigation */}
-        <div className="px-3 sm:px-6 pb-4">
+        <div className="px-6 pb-4">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIndexPage(prev => Math.max(prev - 1, 0))}
@@ -504,7 +498,7 @@ export default function Trade() {
 
       {/* Portfolio Panel */}
       {showPortfolio && holdings.length > 0 && (
-        <div className="mx-3 sm:mx-6 mt-4 bg-white rounded-xl border p-3 sm:p-4">
+        <div className="mx-6 mt-4 bg-white rounded-xl border p-4">
           <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
             <Package size={20} /> Your Holdings
           </h3>
@@ -544,7 +538,7 @@ export default function Trade() {
 
       {/* Trade History Panel */}
       {showHistory && recentOrders.length > 0 && (
-        <div className="mx-3 sm:mx-6 mt-4 bg-white rounded-xl border p-3 sm:p-4">
+        <div className="mx-6 mt-4 bg-white rounded-xl border p-4">
           <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
             <History size={20} /> Recent Trades
           </h3>
@@ -575,7 +569,7 @@ export default function Trade() {
       )}
 
       {/* Sector Tabs */}
-      <div className="px-3 sm:px-6 mt-4 flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+      <div className="px-6 mt-4 flex gap-2 overflow-x-auto scrollbar-hide">
         {SECTORS.map(sector => (
           <button
             key={sector}
@@ -592,7 +586,7 @@ export default function Trade() {
       </div>
 
       {/* Company Cards Grid */}
-      <div className="px-3 sm:px-6 py-4">
+      <div className="px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">
             {selectedSector === 'All' ? 'All Stocks' : `${selectedSector} Sector`}
@@ -649,61 +643,25 @@ export default function Trade() {
 function StockDetailView({
   symbol,
   quotes,
-  onBack: _onBack,
-  onOrderPlaced,
-  holdings,
+  onBack,
+  onOrderPlaced
 }: {
   symbol: string;
   quotes: Record<string, any>;
   onBack: () => void;
   onOrderPlaced?: () => void;
-  holdings?: any[];
 }) {
   const navigate = useNavigate();
-  const [timeframe, setTimeframe] = useState('1D');
+  const [timeframe] = useState('1D');
   const [tradeSide, setTradeSide] = useState<'BUY' | 'SELL' | null>(null);
   const [qty, setQty] = useState(1);
   const [orderType, setOrderType] = useState<'MARKET' | 'LIMIT'>('MARKET');
   const [price, setPrice] = useState(0);
   const [stopLoss, setStopLoss] = useState<number | null>(null);
-  const [enableStopLoss, setEnableStopLoss] = useState(false);
   const [triggerPrice, setTriggerPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [showOptionPanel, setShowOptionPanel] = useState(false);
-  const [showDrawing, setShowDrawing] = useState(false);
-  const [chartCoords, setChartCoords] = useState<{
-    priceToCoor: (price: number) => number | null;
-    coorToPrice: (y: number) => number | null;
-  } | null>(null);
-  const chartWrapperRef = useRef<HTMLDivElement>(null);
-  const [chartDimensions, setChartDimensions] = useState({ width: 0, height: 0 });
-
-  // Track chart container dimensions for drawing overlay
-  useEffect(() => {
-    const el = chartWrapperRef.current;
-    if (!el) return;
-    const obs = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        setChartDimensions({ width: entry.contentRect.width, height: entry.contentRect.height });
-      }
-    });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  const handleDrawingSLChange = useCallback((price: number | null) => {
-    if (price !== null && price > 0) {
-      setStopLoss(price);
-      setEnableStopLoss(true);
-    }
-  }, []);
   const q = quotes[symbol];
-
-  // Find holding for P&L overlay
-  const holding = holdings?.find((h: any) => (h.symbol || '').toUpperCase() === symbol.toUpperCase());
-  const entryPrice = holding ? Number(holding.avgPrice) : undefined;
-  const holdingQty = holding ? Number(holding.quantity) : undefined;
   const isUp = (q?.percentage ?? 0) >= 0;
   const isIndex = INDICES.some(i => i.symbol === symbol);
   const stockName = COMPANIES.find(c => c.symbol === symbol)?.label ||
@@ -728,10 +686,9 @@ function StockDetailView({
         orderType,
         quantity: qty,
         entryPrice: execPrice,
-        stopLoss: enableStopLoss ? (stopLoss || undefined) : undefined,
+        stopLoss: stopLoss || undefined,
         triggerPrice: triggerPrice || undefined,
       });
-      showToastGlobal(`${tradeSide} order placed: ${qty} ${symbol} @ ₹${execPrice?.toFixed(2)}`, 'success');
       setMessage(`✓ ${tradeSide} order placed successfully!`);
       onOrderPlaced?.();
       setTimeout(() => {
@@ -739,7 +696,6 @@ function StockDetailView({
         setMessage('');
         setQty(1);
         setStopLoss(null);
-        setEnableStopLoss(false);
         setTriggerPrice(null);
       }, 2000);
     } catch (e: any) {
@@ -752,14 +708,19 @@ function StockDetailView({
   const totalValue = qty * (orderType === 'MARKET' ? (q?.price ?? 0) : price);
 
   return (
-    <div className="flex flex-col bg-white min-h-screen w-full overflow-x-hidden animate-fade-in">
+    <div className="flex flex-col bg-white min-h-screen w-full overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white border-b px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <BackButton fallbackPath="/Home/trade" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{stockName}</h1>
+      <div className="bg-white border-b px-6 py-4 sticky top-0 z-10">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-gray-900">{stockName}</h1>
               <span className={`text-xs px-2 py-1 rounded font-semibold ${
                 isIndex ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
               }`}>
@@ -771,29 +732,21 @@ function StockDetailView({
               </span>
             </div>
             {q && (
-              <div className="flex items-baseline gap-2 sm:gap-4 mt-1 sm:mt-2 flex-wrap">
-                <span className="text-2xl sm:text-3xl font-bold text-gray-900">₹{fmt(q.price)}</span>
-                <span className={`text-sm sm:text-lg font-semibold flex items-center gap-1 ${isUp ? 'text-green-600' : 'text-red-500'}`}>
+              <div className="flex items-baseline gap-4 mt-2">
+                <span className="text-3xl font-bold text-gray-900">₹{fmt(q.price)}</span>
+                <span className={`text-lg font-semibold flex items-center gap-1 ${isUp ? 'text-green-600' : 'text-red-500'}`}>
                   {isUp ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                   {isUp ? '+' : ''}₹{q.change?.toFixed(2)} ({isUp ? '+' : ''}{q.percentage?.toFixed(2)}%)
                 </span>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            {/* Open in new tab */}
-            <button
-              onClick={() => window.open(`/Home/trade/fullscreen?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}`, '_blank')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
-              title="Open chart in new tab"
-            >
-              <ExternalLink size={18} />
-            </button>
-            {/* Option Chain Button for F&O Indices - Opens side panel */}
+          <div className="flex items-center gap-3">
+            {/* Option Chain Button for F&O Indices - Navigate to dedicated page */}
             {isIndex && FO_INDICES.includes(symbol) && (
               <button
-                onClick={() => setShowOptionPanel(true)}
-                className="px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold rounded-lg transition-colors bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md"
+                onClick={() => navigate(`/Home/options/${symbol}`)}
+                className="px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-md"
               >
                 Option Chain
               </button>
@@ -802,13 +755,13 @@ function StockDetailView({
               <>
                 <button
                   onClick={() => navigate(`/Home/sell/${symbol.replace(/^(NSE:|BSE:)/, '')}`)}
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 font-semibold rounded-lg transition-colors bg-red-100 text-red-600 hover:bg-red-200 text-sm sm:text-base"
+                  className="px-6 py-2.5 font-semibold rounded-lg transition-colors bg-red-100 text-red-600 hover:bg-red-200"
                 >
                   Sell
                 </button>
                 <button
                   onClick={() => setTradeSide('BUY')}
-                  className={`px-4 sm:px-6 py-2 sm:py-2.5 font-semibold rounded-lg transition-colors text-sm sm:text-base ${
+                  className={`px-6 py-2.5 font-semibold rounded-lg transition-colors ${
                     tradeSide === 'BUY' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'
                   }`}
                 >
@@ -823,72 +776,25 @@ function StockDetailView({
       <div className="flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start gap-6 lg:gap-4 overflow-hidden">
         {/* Main Chart Area */}
         <div className="flex-1 min-w-0 flex flex-col">
-          {/* Timeframe Selector */}
-          <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 border-b bg-gray-50 overflow-x-auto">
-            {['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'].map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
-                  timeframe === tf
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-white hover:shadow'
-                }`}
-              >
-                {tf}
-              </button>
-            ))}
-            <div className="ml-auto pl-2">
-              <button
-                onClick={() => setShowDrawing(!showDrawing)}
-                className={`p-2 rounded-lg transition-colors ${
-                  showDrawing
-                    ? 'bg-blue-100 text-blue-600'
-                    : 'text-gray-500 hover:bg-white hover:shadow'
-                }`}
-                title="Drawing tools"
-              >
-                <Pencil size={16} />
-              </button>
-            </div>
-          </div>
-
           {/* Chart */}
-          <div className="flex-1 p-2 sm:p-4">
-            <div ref={chartWrapperRef} className="relative h-full w-full min-h-[280px] sm:min-h-[400px] rounded-lg overflow-hidden border">
-              <ChartErrorBoundary>
-                <CandlestickChart 
-                  symbol={symbol} 
-                  range={timeframe} 
-                  height={400} 
-                  livePrice={q?.price}
-                  onFullscreen={() => navigate('/Home/trade/fullscreen', { state: { symbol, timeframe } })}
-                  entryPrice={entryPrice}
-                  holdingQty={holdingQty}
-                  stopLossPrice={enableStopLoss && stopLoss ? stopLoss : undefined}
-                  onChartReady={setChartCoords}
-                />
-              </ChartErrorBoundary>
-              {showDrawing && chartCoords && chartDimensions.width > 0 && (
-                <ChartDrawingOverlay
-                  symbol={symbol}
-                  width={chartDimensions.width}
-                  height={chartDimensions.height}
-                  priceToCoor={chartCoords.priceToCoor}
-                  coorToPrice={chartCoords.coorToPrice}
-                  visible={showDrawing}
-                  onClose={() => setShowDrawing(false)}
-                  onStopLossChange={handleDrawingSLChange}
-                />
-              )}
-            </div>
+          <div className="flex-1 p-4">
+            <ChartErrorBoundary>
+              <ProTradingChart
+                symbol={symbol}
+                range={timeframe}
+                height={460}
+                livePrice={q?.price}
+                showTradePanel={false}
+                onFullscreen={() => navigate('/Home/trade/fullscreen', { state: { symbol, timeframe } })}
+              />
+            </ChartErrorBoundary>
           </div>
 
           {/* Stats Grid */}
           {q && (
-            <div className="px-3 sm:px-6 py-3 sm:py-4 border-t bg-gray-50">
+            <div className="px-6 py-4 border-t bg-gray-50">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Market Statistics</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {[
                   { label: 'Open', value: `₹${fmt(q.open)}` },
                   { label: 'High', value: `₹${fmt(q.high)}`, color: 'text-green-600' },
@@ -911,7 +817,7 @@ function StockDetailView({
 
         {/* Right Sidebar - Trade Form */}
         {tradeSide && !isIndex && (
-          <div className="w-full lg:w-[360px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l bg-gray-50 p-3 sm:p-6 overflow-visible lg:overflow-y-auto">
+          <div className="w-full lg:w-[360px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l bg-gray-50 p-6 overflow-visible lg:overflow-y-auto">
             <div className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-bold ${tradeSide === 'BUY' ? 'text-green-700' : 'text-red-600'}`}>
@@ -986,62 +892,36 @@ function StockDetailView({
                 </div>
               </div>
 
-              {/* Stop Loss Toggle & Fields */}
-              <div className="mb-5">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs text-gray-500 font-medium">Stop Loss</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEnableStopLoss(!enableStopLoss);
-                      if (enableStopLoss) { setStopLoss(null); setTriggerPrice(null); }
-                    }}
-                    className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${
-                      enableStopLoss ? 'bg-blue-500' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                      enableStopLoss ? 'translate-x-5' : 'translate-x-0'
-                    }`} />
-                  </button>
-                </div>
-                {enableStopLoss && (
-                  <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-2">SL Price</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                        <input
-                          type="number"
-                          step="0.05"
-                          value={stopLoss ?? ''}
-                          onChange={(e) => setStopLoss(e.target.value ? +e.target.value : null)}
-                          placeholder="e.g. 1250"
-                          className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-red-400 text-sm border-red-200"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-2">Trigger Price</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
-                        <input
-                          type="number"
-                          step="0.05"
-                          value={triggerPrice ?? ''}
-                          onChange={(e) => setTriggerPrice(e.target.value ? +e.target.value : null)}
-                          placeholder="Optional"
-                          className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        />
-                      </div>
-                    </div>
-                    {stopLoss && stopLoss > 0 && q?.price && (
-                      <div className="col-span-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                        🛑 SL at ₹{stopLoss.toFixed(2)} — {((q.price - stopLoss) / q.price * 100).toFixed(1)}% below current price
-                      </div>
-                    )}
+              {/* Stop Loss & Trigger Price */}
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <div>
+                  <label className="text-xs text-gray-500 block mb-2">Stop Loss</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={stopLoss ?? ''}
+                      onChange={(e) => setStopLoss(e.target.value ? +e.target.value : null)}
+                      placeholder="Optional"
+                      className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
                   </div>
-                )}
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-2">Trigger Price</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={triggerPrice ?? ''}
+                      onChange={(e) => setTriggerPrice(e.target.value ? +e.target.value : null)}
+                      placeholder="Optional"
+                      className="w-full pl-7 pr-3 py-2.5 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Summary */}
@@ -1093,14 +973,6 @@ function StockDetailView({
           </div>
         )}
       </div>
-
-      {/* Option Chain Side Panel */}
-      <OptionChainPanel
-        isOpen={showOptionPanel}
-        onClose={() => setShowOptionPanel(false)}
-        symbol={symbol}
-        spotPrice={q?.price}
-      />
     </div>
   );
 }

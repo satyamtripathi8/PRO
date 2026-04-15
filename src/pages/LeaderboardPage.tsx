@@ -39,14 +39,10 @@ export default function LeaderboardPage() {
           leaderboardApi.daily().catch(() => ({ data: null })),
           leaderboardApi.platform().catch(() => ({ data: null })),
         ]);
-        // Backend sends { data: { data: [...], filter, limit } }
-        const lbEntries = lbRes?.data?.data || lbRes?.data || [];
-        console.log('[Leaderboard] API response:', { raw: lbRes, entries: lbEntries });
-        setLeaderboard(Array.isArray(lbEntries) ? lbEntries : []);
-        setDailyStats(dailyRes?.data);
-        setPlatformStats(platformRes?.data);
-      } catch (err) {
-        console.error('[Leaderboard] Fetch failed:', err);
+        setLeaderboard(lbRes.data || []);
+        setDailyStats(dailyRes.data);
+        setPlatformStats(platformRes.data);
+      } catch {
         setLeaderboard([]);
       } finally {
         setLoading(false);
@@ -69,11 +65,11 @@ export default function LeaderboardPage() {
   ];
 
   return (
-    <main className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-5xl mx-auto w-full">
+    <main className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
             <Trophy className="text-yellow-500" size={28} />
             Leaderboard
           </h1>
@@ -100,7 +96,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 pb-0 overflow-x-auto items-center">
+      <div className="flex gap-2 border-b border-gray-200 pb-0 flex-wrap items-center">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
@@ -121,7 +117,7 @@ export default function LeaderboardPage() {
 
         {/* Time Filters - Show only for Overall tab */}
         {activeTab === 'overall' && (
-          <div className="ml-auto flex gap-1 sm:gap-2 flex-shrink-0">
+          <div className="ml-auto flex gap-2">
             {timeFilters.map(filter => (
               <button
                 key={filter.key}
@@ -190,7 +186,7 @@ export default function LeaderboardPage() {
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-400">Best Trade</p>
-                      <p className="font-semibold text-green-600">+₹{entry.bestTrade?.toFixed(0) || '0'}</p>
+                      <p className="font-semibold text-green-600">+₹{entry.bestTrade?.toFixed(0)}</p>
                     </div>
                   </div>
 

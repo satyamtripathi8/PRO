@@ -42,44 +42,45 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
   ];
 
   return (
-      <section
-        ref={ref}
-        className="relative overflow-hidden py-20 bg-gradient-to-b from-white to-slate-50"
-      >
+    <section
+      ref={ref}
+      className="relative overflow-hidden py-14 bg-gradient-to-b from-white to-slate-50 sm:py-18 lg:py-22"
+    >
       {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-500/5 blur-3xl rounded-full"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-500/5 blur-3xl rounded-full"></div>
 
-      <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-10">
+      <div className="relative z-10 px-5 mx-auto max-w-7xl sm:px-8 lg:px-10">
         {/* Header */}
-        <div className="mb-24 text-center opacity-0 animate-fadeInUp">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-5xl text-slate-900">
+        <div className="mb-12 text-center opacity-0 animate-fadeInUp sm:mb-16">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-slate-900">
             How it works
           </h2>
-          <p className="max-w-3xl mx-auto text-lg sm:text-xl lg:text-2xl text-slate-600">
+          <p className="max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-slate-600">
             A structured, performance-driven path from evaluation to funded
             capital.
           </p>
         </div>
 
         <div className="relative">
-          {/* Animated Progress Line (Desktop) */}
-          <div className="hidden lg:block absolute top-[52px] left-0 right-0 h-0.5 bg-slate-200">
+          {/* Animated Progress Line (Desktop only) */}
+          <div className="hidden lg:block absolute top-[38px] left-0 right-0 h-0.5 bg-slate-200">
             <div className="h-full bg-brand-500 animate-progress"></div>
           </div>
 
-          <div className="relative z-10 grid grid-cols-1 gap-16 lg:grid-cols-5 lg:gap-10">
+          <div className="relative z-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-5 lg:gap-8">
             {steps.map((step, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center text-center opacity-0 group animate-fadeInUp"
+                className="flex flex-col items-center text-center opacity-0 group animate-fadeInUp sm:flex-col"
                 style={{ animationDelay: `${index * 0.15}s` }}
               >
                 {/* Circle */}
                 <div
                   className={`
-                    w-28 h-28 rounded-full flex items-center justify-center mb-6 
+                    w-16 h-16 rounded-full flex items-center justify-center mb-4
                     relative border-4 transition-all duration-500 ease-smooth
                     group-hover:scale-110 group-hover:shadow-glow
+                    sm:w-20 sm:h-20
                     ${
                       step.active
                         ? "bg-white border-brand-500 shadow-soft"
@@ -87,9 +88,9 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
                     }
                   `}
                 >
-                  {React.cloneElement(step.icon as React.ReactElement<any>, {
+                  {React.cloneElement(step.icon as React.ReactElement<{ className?: string }>, {
                     className: `
-                      w-10 h-10 transition-all duration-500
+                      w-7 h-7 transition-all duration-500 sm:w-8 sm:h-8
                       group-hover:rotate-6 group-hover:scale-125
                       ${step.active ? "text-brand-600" : "text-white"}
                     `,
@@ -97,18 +98,18 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
                 </div>
 
                 {/* Title */}
-                <h3 className="mb-1 text-xl font-bold transition-colors duration-300 text-slate-900 group-hover:text-brand-600">
+                <h3 className="mb-1 text-sm font-bold transition-colors duration-300 text-slate-900 group-hover:text-brand-600 sm:text-base">
                   {step.title}
                 </h3>
 
                 {step.subtitle && (
-                  <span className="block mb-2 text-base font-medium text-slate-500">
+                  <span className="block mb-1.5 text-xs font-medium text-slate-500 sm:text-sm">
                     {step.subtitle}
                   </span>
                 )}
 
                 {/* Description */}
-                <p className="text-base text-slate-600 leading-relaxed max-w-[240px] group-hover:text-slate-800 transition-colors duration-300">
+                <p className="text-xs text-slate-600 leading-relaxed max-w-[180px] group-hover:text-slate-800 transition-colors duration-300 sm:text-sm sm:max-w-[200px]">
                   {step.description}
                 </p>
               </div>
@@ -119,5 +120,7 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
     </section>
   );
 });
+
+HowItWorks.displayName = "HowItWorks";
 
 export default HowItWorks;

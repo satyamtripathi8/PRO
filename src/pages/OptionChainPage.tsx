@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { RefreshCw, TrendingUp, TrendingDown, ChevronDown, X, Wifi, WifiOff } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, RefreshCw, TrendingUp, TrendingDown, ChevronDown, X, Wifi, WifiOff } from 'lucide-react';
 import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, ReferenceLine } from 'recharts';
 import { marketApi, ordersApi } from '../lib/api';
 import { WS_BASE_URL } from '../lib/config';
 import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
-import BackButton from '../components/common/BackButton';
-import { showToastGlobal } from '../hooks/useToast';
 
 const WS_URL = WS_BASE_URL;
 
@@ -120,7 +118,6 @@ function TradeModal({
         entryPrice: ltp,
       });
       setMessage(`✓ ${side} order placed for ${optionSymbol}`);
-      showToastGlobal(`${side} ${optionSymbol} x${totalQty} @ ₹${ltp.toFixed(2)}`, 'success');
       setTimeout(() => {
         onSuccess();
         onClose();
@@ -135,8 +132,8 @@ function TradeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-[420px] shadow-2xl overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-[420px] shadow-2xl overflow-hidden">
         {/* Header */}
         <div className={`px-6 py-4 flex items-center justify-between ${
           type === 'CE' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'
@@ -356,6 +353,7 @@ function MiniChart({ symbol, range }: { symbol: string; range: string }) {
 
 export default function OptionChainPage() {
   const { symbol = 'NIFTY50' } = useParams<{ symbol: string }>();
+  const navigate = useNavigate();
 
   const [chain, setChain] = useState<OptionChainData | null>(null);
   const [quote, setQuote] = useState<QuoteData | null>(null);
@@ -457,12 +455,17 @@ export default function OptionChainPage() {
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-20">
         <div className="max-w-[1600px] mx-auto px-4 py-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <BackButton fallbackPath="/Home/trade" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ArrowLeft size={20} />
+              </button>
               <div>
-                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                  <h1 className="text-lg sm:text-xl font-bold text-gray-900">{symbol} Option Chain</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl font-bold text-gray-900">{symbol} Option Chain</h1>
                   {/* Live via WS */}
                   <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
                     wsLive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'
@@ -472,9 +475,9 @@ export default function OptionChainPage() {
                   </span>
                 </div>
                 {quote && (
-                  <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
-                    <span className="text-xl sm:text-2xl font-bold">₹{fmt(quote.price)}</span>
-                    <span className={`text-xs sm:text-sm font-semibold flex items-center gap-1 ${isUp ? 'text-green-600' : 'text-red-500'}`}>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-2xl font-bold">₹{fmt(quote.price)}</span>
+                    <span className={`text-sm font-semibold flex items-center gap-1 ${isUp ? 'text-green-600' : 'text-red-500'}`}>
                       {isUp ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                       {isUp ? '+' : ''}₹{quote.change?.toFixed(2)} ({isUp ? '+' : ''}{quote.percentage?.toFixed(2)}%)
                     </span>
@@ -483,13 +486,13 @@ export default function OptionChainPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-4">
               {/* Expiry Selector */}
               <div className="relative">
                 <select
                   value={expiry}
                   onChange={(e) => setExpiry(e.target.value as 'weekly' | 'monthly')}
-                  className="appearance-none bg-gray-100 text-sm font-medium px-3 sm:px-4 py-2 pr-9 sm:pr-10 rounded-lg cursor-pointer hover:bg-gray-200 outline-none"
+                  className="appearance-none bg-gray-100 text-sm font-medium px-4 py-2 pr-10 rounded-lg cursor-pointer hover:bg-gray-200 outline-none"
                 >
                   <option value="weekly">Weekly Expiry</option>
                   <option value="monthly">Monthly Expiry</option>

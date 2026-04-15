@@ -487,6 +487,373 @@ function Pagination({ page, total, limit, onPage }: { page: number; total: numbe
   );
 }
 
+// ─── Shared form fields config ────────────────────────────────────────────────
+const COMP_FIELDS = [
+  { label: 'Title *', key: 'title', type: 'text', placeholder: 'e.g. JIET Intraday Challenge' },
+  { label: 'Type', key: 'type', type: 'select', options: ['FREE', 'PAID'] },
+  { label: 'Start Time *', key: 'startTime', type: 'datetime-local' },
+  { label: 'End Time *', key: 'endTime', type: 'datetime-local' },
+  { label: 'Reg. Deadline', key: 'registrationDeadline', type: 'datetime-local' },
+  { label: 'Entry Fee (₹)', key: 'entryFee', type: 'number', placeholder: 'Leave blank for free' },
+  { label: 'Prize Pool (₹)', key: 'prizePool', type: 'number', placeholder: 'Optional' },
+  { label: 'Starting Capital (₹)', key: 'startingCapital', type: 'number', placeholder: '100000' },
+  { label: 'Max Participants', key: 'maxParticipants', type: 'number', placeholder: 'Unlimited' },
+  { label: 'Allowed Domains (comma-sep)', key: 'allowedDomains', type: 'text', placeholder: 'jietjodhpur.ac.in, iitj.ac.in' },
+];
+
+const BLANK_FORM = {
+  title: '', description: '', type: 'FREE', startTime: '', endTime: '',
+  registrationDeadline: '', entryFee: '', prizePool: '', startingCapital: '100000',
+  maxParticipants: '', allowedDomains: '',
+};
+
+function toISO(dt: string) {
+  return dt ? new Date(dt).toISOString() : dt;
+}
+
+function buildPayload(form: typeof BLANK_FORM) {
+  const payload: any = {
+    title: form.title,
+    description: form.description || undefined,
+    type: form.type,
+    startTime: toISO(form.startTime),
+    endTime: toISO(form.endTime),
+    startingCapital: Number(form.startingCapital) || 100000,
+  };
+  if (form.registrationDeadline) payload.registrationDeadline = toISO(form.registrationDeadline);
+  if (form.entryFee) payload.entryFee = Number(form.entryFee);
+  if (form.prizePool) payload.prizePool = Number(form.prizePool);
+  if (form.maxParticipants) payload.maxParticipants = Number(form.maxParticipants);
+  if (form.allowedDomains.trim())
+    payload.allowedDomains = form.allowedDomains.split(',').map((d: string) => d.trim()).filter(Boolean);
+  return payload;
+}
+
+function fmtDt(iso: string) {
+  return iso ? iso.slice(0, 16) : ''; // trim to datetime-local format
+}
+
+const COMP_INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+
+// ─── Participant Panel ────────────────────────────────────────────────────────
+function ParticipantPanel({ comp, onClose }: { comp: any; onClose: () => void }) {
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [disqMsg, setDisqMsg] = useState<Record<string, string>>({});
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const r = await api(`/competitions/${comp.id}/participants?limit=100`);
+    setParticipants(r.data?.data ?? []);
+    setLoading(false);
+  }, [comp.id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleDisqualify = async (userId: string) => {
+    if (!window.confirm('Disqualify this participant? They will no longer be able to trade.')) return;
+    const r = await api(`/competitions/${comp.id}/disqualify/${userId}`, { method: 'POST' });
+    setDisqMsg(prev => ({ ...prev, [userId]: r.success ? 'Disqualified' : r.message ?? 'Failed' }));
+    if (r.success) load();
+  };
+
+  const statusCls: Record<string, string> = {
+    ACTIVE: 'bg-green-100 text-green-700 border border-green-200',
+    REGISTERED: 'bg-sky-100 text-sky-700 border border-sky-200',
+    COMPLETED: 'bg-gray-100 text-gray-600 border border-gray-200',
+    DISQUALIFIED: 'bg-red-100 text-red-700 border border-red-200',
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <div className="font-semibold text-gray-900">Participants — {comp.title}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{participants.length} registered</div>
+          </div>
+          <button onClick={onClose} className="text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">✕ Close</button>
+        </div>
+        <div className="overflow-y-auto p-6">
+          {loading ? (
+            <div className="text-center text-gray-400 py-12">Loading…</div>
+          ) : participants.length === 0 ? (
+            <div className="text-center text-gray-400 py-12">No participants yet.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-gray-500 border-b border-gray-100">
+                  <th className="text-left py-2 px-3">#</th>
+                  <th className="text-left py-2 px-3">Trader</th>
+                  <th className="text-right py-2 px-3">Balance</th>
+                  <th className="text-right py-2 px-3">P&L</th>
+                  <th className="text-right py-2 px-3">Trades</th>
+                  <th className="text-center py-2 px-3">Status</th>
+                  <th className="text-center py-2 px-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.map((p: any, idx: number) => {
+                  const pnl = Number(p.totalPnL ?? 0);
+                  return (
+                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
+                      <td className="py-3 px-3 text-gray-400">{idx + 1}</td>
+                      <td className="py-3 px-3">
+                        <div className="font-medium text-gray-800">{p.user?.name ?? '—'}</div>
+                        <div className="text-xs text-gray-400">{p.user?.email}</div>
+                      </td>
+                      <td className="py-3 px-3 text-right text-gray-700">₹{Number(p.currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                      <td className={`py-3 px-3 text-right font-semibold ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        {pnl >= 0 ? '+' : ''}₹{Math.abs(pnl).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-3 px-3 text-right text-gray-500">{p.totalTrades}</td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusCls[p.status] ?? 'bg-gray-100 text-gray-600'}`}>{p.status}</span>
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        {p.status !== 'DISQUALIFIED' && p.status !== 'COMPLETED' ? (
+                          <button onClick={() => handleDisqualify(p.userId)} className="text-xs text-red-600 border border-red-200 rounded px-2 py-1 hover:bg-red-50">Disqualify</button>
+                        ) : (
+                          <span className="text-xs text-gray-400">{disqMsg[p.userId] ?? '—'}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Edit Competition Modal ───────────────────────────────────────────────────
+function EditCompModal({ comp, onClose, onSaved }: { comp: any; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState<typeof BLANK_FORM>({
+    title: comp.title ?? '',
+    description: comp.description ?? '',
+    type: comp.type ?? 'FREE',
+    startTime: fmtDt(comp.startTime),
+    endTime: fmtDt(comp.endTime),
+    registrationDeadline: comp.registrationDeadline ? fmtDt(comp.registrationDeadline) : '',
+    entryFee: comp.entryFee ? String(Number(comp.entryFee)) : '',
+    prizePool: comp.prizePool ? String(Number(comp.prizePool)) : '',
+    startingCapital: comp.startingCapital ? String(Number(comp.startingCapital)) : '100000',
+    maxParticipants: comp.maxParticipants ? String(comp.maxParticipants) : '',
+    allowedDomains: comp.allowedDomains?.map((d: any) => d.domain).join(', ') ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const handleSave = async () => {
+    setSaving(true); setMsg(null);
+    const r = await api(`/competitions/${comp.id}`, { method: 'PATCH', body: JSON.stringify(buildPayload(form)) });
+    setSaving(false);
+    if (r.success) {
+      setMsg({ text: 'Saved!', ok: true });
+      setTimeout(() => { onSaved(); onClose(); }, 800);
+    } else {
+      setMsg({ text: r.message ?? 'Save failed', ok: false });
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="font-semibold text-gray-900">Edit Competition <span className="text-xs font-normal text-gray-400 ml-1">(DRAFT only)</span></div>
+          <button onClick={onClose} className="text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">✕ Close</button>
+        </div>
+        <div className="overflow-y-auto p-6 space-y-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+            {COMP_FIELDS.map((field: any) => (
+              <div key={field.key}>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{field.label}</label>
+                {field.type === 'select' ? (
+                  <select value={(form as any)[field.key]} onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))} className={COMP_INPUT}>
+                    {field.options.map((o: string) => <option key={o}>{o}</option>)}
+                  </select>
+                ) : (
+                  <input type={field.type} value={(form as any)[field.key]} placeholder={field.placeholder}
+                    onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))} className={COMP_INPUT} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3}
+              className={`${COMP_INPUT} resize-y`} />
+          </div>
+          {msg && <div className={`text-sm ${msg.ok ? 'text-green-600' : 'text-red-500'}`}>{msg.text}</div>}
+          <div className="flex gap-3 pt-1">
+            <button disabled={saving} onClick={handleSave}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg px-6 py-2 font-semibold text-sm">
+              {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+            <button onClick={onClose} className="border border-gray-200 text-gray-600 rounded-lg px-5 py-2 text-sm hover:bg-gray-50">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Competitions Admin Tab ───────────────────────────────────────────────────
+function CompetitionsAdminTab() {
+  const [competitions, setCompetitions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState<typeof BLANK_FORM>({ ...BLANK_FORM });
+  const [formMsg, setFormMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const [statusMsg, setStatusMsg] = useState<Record<string, string>>({});
+  const [editComp, setEditComp] = useState<any>(null);
+  const [participantComp, setParticipantComp] = useState<any>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const r = await api('/competitions/admin/all?limit=50');
+    setCompetitions(r.data?.data ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleCreate = async () => {
+    if (!form.startTime) { setFormMsg({ text: 'Please select a start date & time', ok: false }); return; }
+    if (!form.endTime) { setFormMsg({ text: 'Please select an end date & time', ok: false }); return; }
+    if (new Date(form.endTime) <= new Date(form.startTime)) { setFormMsg({ text: 'End time must be after start time', ok: false }); return; }
+    setCreating(true); setFormMsg(null);
+    const r = await api('/competitions', { method: 'POST', body: JSON.stringify(buildPayload(form)) });
+    setCreating(false);
+    if (r.success) {
+      setFormMsg({ text: 'Competition created!', ok: true });
+      setForm({ ...BLANK_FORM });
+      load();
+    } else {
+      const detail = r.details?.map((d: any) => `${d.field}: ${d.message}`).join(', ');
+      setFormMsg({ text: detail ? `${r.message} — ${detail}` : (r.message ?? 'Failed to create'), ok: false });
+    }
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    const r = await api(`/competitions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+    setStatusMsg(prev => ({ ...prev, [id]: r.success ? `→ ${status}` : r.message ?? 'Failed' }));
+    if (r.success) load();
+  };
+
+  const statusCls: Record<string, string> = {
+    DRAFT: 'bg-gray-100 text-gray-600 border border-gray-200',
+    UPCOMING: 'bg-sky-100 text-sky-700 border border-sky-200',
+    ACTIVE: 'bg-green-100 text-green-700 border border-green-200',
+    COMPLETED: 'bg-slate-100 text-slate-600 border border-slate-200',
+    CANCELLED: 'bg-red-100 text-red-600 border border-red-200',
+  };
+
+  return (
+    <div className="space-y-6">
+      {editComp && <EditCompModal comp={editComp} onClose={() => setEditComp(null)} onSaved={load} />}
+      {participantComp && <ParticipantPanel comp={participantComp} onClose={() => setParticipantComp(null)} />}
+
+      {/* Create form */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <h3 className="font-semibold text-gray-800">Create Competition</h3>
+          <p className="text-xs text-gray-500 mt-0.5">Fill in the title, then set dates and click Create</p>
+        </div>
+        <div className="p-6 space-y-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+            {COMP_FIELDS.map((field: any) => (
+              <div key={field.key}>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{field.label}</label>
+                {field.type === 'select' ? (
+                  <select value={(form as any)[field.key]} onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))} className={COMP_INPUT}>
+                    {field.options.map((o: string) => <option key={o}>{o}</option>)}
+                  </select>
+                ) : (
+                  <input type={field.type} value={(form as any)[field.key]} placeholder={field.placeholder}
+                    onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))} className={COMP_INPUT} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2}
+              className={`${COMP_INPUT} resize-y`} />
+          </div>
+          {formMsg && <div className={`text-sm ${formMsg.ok ? 'text-green-600' : 'text-red-500'}`}>{formMsg.text}</div>}
+          <button disabled={creating || !form.title} onClick={handleCreate}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg px-6 py-2 font-semibold text-sm">
+            {creating ? 'Creating…' : 'Create Competition'}
+          </button>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h3 className="font-semibold text-gray-800">All Competitions <span className="text-sm font-normal text-gray-400">({competitions.length})</span></h3>
+          <button onClick={load} className="text-xs text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">Refresh</button>
+        </div>
+        <div className="p-6">
+          {loading ? (
+            <div className="text-center text-gray-400 py-12">Loading…</div>
+          ) : competitions.length === 0 ? (
+            <div className="text-center text-gray-400 py-12">No competitions yet.</div>
+          ) : (
+            <div className="space-y-3">
+              {competitions.map((comp: any) => (
+                <div key={comp.id} className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 transition-colors">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-gray-900">{comp.title}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(comp.startTime).toLocaleDateString('en-IN')} → {new Date(comp.endTime).toLocaleDateString('en-IN')}
+                        &nbsp;·&nbsp; {comp._count?.participants ?? 0} participants
+                        {comp.allowedDomains?.length > 0 && ` · 🔒 ${comp.allowedDomains.map((d: any) => d.domain).join(', ')}`}
+                        {comp.entryFee && ` · ₹${Number(comp.entryFee).toLocaleString('en-IN')} entry`}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusCls[comp.status] ?? 'bg-gray-100 text-gray-600'}`}>{comp.status}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${comp.type === 'PAID' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>{comp.type}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2 flex-wrap items-center">
+                    {comp.status === 'DRAFT' && (
+                      <button onClick={() => handleStatusChange(comp.id, 'UPCOMING')} className="text-xs border border-sky-200 text-sky-600 rounded-md px-3 py-1 hover:bg-sky-50">→ UPCOMING</button>
+                    )}
+                    {comp.status === 'UPCOMING' && (
+                      <button onClick={() => handleStatusChange(comp.id, 'ACTIVE')} className="text-xs border border-green-200 text-green-600 rounded-md px-3 py-1 hover:bg-green-50">→ ACTIVE</button>
+                    )}
+                    {comp.status === 'ACTIVE' && (
+                      <button onClick={() => handleStatusChange(comp.id, 'COMPLETED')} className="text-xs border border-gray-200 text-gray-600 rounded-md px-3 py-1 hover:bg-gray-50">→ COMPLETE</button>
+                    )}
+                    {['DRAFT', 'UPCOMING', 'ACTIVE'].includes(comp.status) && (
+                      <button onClick={() => handleStatusChange(comp.id, 'CANCELLED')} className="text-xs border border-red-200 text-red-500 rounded-md px-3 py-1 hover:bg-red-50">Cancel</button>
+                    )}
+                    <span className="text-gray-200">|</span>
+                    {comp.status === 'DRAFT' && (
+                      <button onClick={() => setEditComp(comp)} className="text-xs border border-violet-200 text-violet-600 rounded-md px-3 py-1 hover:bg-violet-50">✏️ Edit</button>
+                    )}
+                    <button onClick={() => setParticipantComp(comp)} className="text-xs border border-amber-200 text-amber-600 rounded-md px-3 py-1 hover:bg-amber-50">
+                      👥 Participants ({comp._count?.participants ?? 0})
+                    </button>
+                    {statusMsg[comp.id] && <span className="text-xs text-gray-400">{statusMsg[comp.id]}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Admin Dashboard ─────────────────────────────────────────────────────
 const TABS = [
   { key: 'analytics', label: '📊 Analytics' },
@@ -496,6 +863,7 @@ const TABS = [
   { key: 'behavior', label: '🧠 Behavior' },
   { key: 'chat', label: '💬 Chat Logs' },
   { key: 'summaries', label: '📋 Summaries' },
+  { key: 'competitions', label: '🏆 Competitions' },
 ];
 
 export default function AdminDashboard() {
@@ -544,6 +912,7 @@ export default function AdminDashboard() {
             {tab === 'behavior' && 'Real-time behavioral events and triggers'}
             {tab === 'chat' && 'AI mentor conversation logs'}
             {tab === 'summaries' && 'Performance summaries cache'}
+            {tab === 'competitions' && 'Create and manage trading competitions'}
           </p>
         </div>
 
@@ -554,6 +923,7 @@ export default function AdminDashboard() {
         {tab === 'behavior' && <BehaviorTab />}
         {tab === 'chat' && <ChatLogsTab />}
         {tab === 'summaries' && <SummariesTab />}
+        {tab === 'competitions' && <CompetitionsAdminTab />}
       </div>
     </div>
   );

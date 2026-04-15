@@ -26,12 +26,12 @@ export default function Leaderboard({
 
   const handleClick = () => {
     if (clickable) {
-      navigate('/home/leaderboard');
+      navigate('/leaderboard');
     }
   };
 
   return (
-    <Card
+    <Card 
       className={clsx(
         clickable && "cursor-pointer hover:shadow-md transition-shadow",
         className
@@ -45,8 +45,9 @@ export default function Leaderboard({
       {data.map((item, index) => (
         <div
           key={item.id}
-          className={`flex justify-between py-2 ${index !== data.length - 1 ? "border-b" : ""
-            }`}
+          className={`flex justify-between py-2 ${
+            index !== data.length - 1 ? "border-b" : ""
+          }`}
         >
           <span>{item.rank}</span>
           <span>{item.name}</span>

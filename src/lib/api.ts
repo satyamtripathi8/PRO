@@ -2,10 +2,7 @@ import { API_BASE_URL } from './config';
 
 const BASE = `${API_BASE_URL}/api`;
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const fullUrl = `${BASE}${url}`;
-  console.log(`[API] ${options.method || 'GET'} ${url}`);
-  
-  const res = await fetch(fullUrl, {
+  const res = await fetch(`${BASE}${url}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
@@ -17,7 +14,6 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   const json = await res.json();
 
   if (!res.ok) {
-    console.error(`[API] ${url} => ${res.status}:`, json?.message || json);
     throw new Error(json.message || 'Request failed');
   }
 
@@ -160,6 +156,14 @@ export const portfolioApi = {
 
   getInvestedAmount: () =>
     request<any>('/portfolio/invested-amount'),
+
+  getTradeHistory: (params: { days?: number; symbol?: string; page?: number; limit?: number }) => {
+    const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])).toString();
+    return request<any>(`/portfolio/trade-history${q ? `?${q}` : ''}`);
+  },
+
+  getMaxDrawdown: (days = 90) =>
+    request<any>(`/portfolio/max-drawdown?days=${days}`),
 };
 
 // ─── Market Data ──────────────────────────────────────
@@ -265,6 +269,61 @@ export const aiSummaryApi = {
 
   dashboard: (timeframe: 'daily' | 'weekly' | 'monthly') =>
     request<any>(`/ai/dashboard-summary?timeframe=${timeframe}`),
+};
+
+// ─── Competitions ───────────────────────────────────────
+export const competitionsApi = {
+  // User
+  list: () => request<any>('/competitions'),
+  my: () => request<any>('/competitions/my'),
+  get: (id: string) => request<any>(`/competitions/${id}`),
+  join: (id: string) =>
+    request<any>(`/competitions/${id}/join`, { method: 'POST' }),
+  initiatePayment: (id: string) =>
+    request<any>(`/competitions/${id}/initiate-payment`, { method: 'POST' }),
+  verifyPayment: (
+    id: string,
+    data: { razorpayPaymentId: string; razorpayOrderId: string; signature: string }
+  ) =>
+    request<any>(`/competitions/${id}/verify-payment`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  leaderboard: (id: string) => request<any>(`/competitions/${id}/leaderboard`),
+  myStats: (id: string) => request<any>(`/competitions/${id}/my-stats`),
+  placeOrder: (
+    id: string,
+    data: { symbol: string; side: 'BUY' | 'SELL'; quantity: number; entryPrice: number; stopLoss?: number }
+  ) =>
+    request<any>(`/competitions/${id}/orders`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  closeOrder: (id: string, orderId: string, exitPrice: number) =>
+    request<any>(`/competitions/${id}/orders/${orderId}/close`, {
+      method: 'POST',
+      body: JSON.stringify({ exitPrice }),
+    }),
+  orders: (id: string) => request<any>(`/competitions/${id}/orders`),
+  portfolio: (id: string) => request<any>(`/competitions/${id}/portfolio`),
+
+  // Admin
+  adminList: (params?: { status?: string; type?: string; page?: number }) => {
+    const q = new URLSearchParams(params as any).toString();
+    return request<any>(`/competitions/admin/all${q ? `?${q}` : ''}`);
+  },
+  create: (data: any) =>
+    request<any>('/competitions', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) =>
+    request<any>(`/competitions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  updateStatus: (id: string, status: string) =>
+    request<any>(`/competitions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+  participants: (id: string) => request<any>(`/competitions/${id}/participants`),
+  disqualify: (id: string, userId: string) =>
+    request<any>(`/competitions/${id}/disqualify/${userId}`, { method: 'POST' }),
 };
 
 

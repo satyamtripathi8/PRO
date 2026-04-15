@@ -7,11 +7,11 @@ export default function MainLayout() {
   const { user } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-gray-100 overflow-x-hidden">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar userName={user?.name || "User"} userAvatar="" />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col">
         <Topbar />
-        <div className="flex-1 p-2 sm:p-4 overflow-y-auto overflow-x-hidden">
+        <div className="p-4 overflow-y-auto">
           <Outlet />
         </div>
       </div>

@@ -1,14 +1,14 @@
 import React from "react";
-import { Instagram, Linkedin, Mail } from "lucide-react";
+import { Instagram, Linkedin, Mail, ArrowUpRight } from "lucide-react";
 
-// ── Social links — update these URLs when ready ──────────────────────────────
+// ── Social links ──────────────────────────────────────────────────────────────
 const SOCIAL_LINKS = {
   instagram: "https://www.instagram.com/trevoros.hq?igsh=MWZsMWZsdzRlazB6Mw==",
   x:         "https://x.com/TrevorosHQ",
   linkedin:  "https://www.linkedin.com/company/trevoros/",
 };
 
-// X (Twitter) SVG icon — lucide-react does not include the new X logo
+// X (Twitter) SVG icon
 const XIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
     viewBox="0 0 24 24"
@@ -20,80 +20,153 @@ const XIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+interface NavLink {
+  label: string;
+  href: string;
+}
+
+const PLATFORM_LINKS: NavLink[] = [
+  { label: "How It Works",  href: "#how-it-works"  },
+  { label: "Platform",      href: "#platform"      },
+  { label: "Who It's For",  href: "#who-this-is-for"},
+  { label: "Education",     href: "#education"     },
+  { label: "Early Access",  href: "#early-access"  },
+  { label: "FAQ",           href: "#faq"           },
+];
+
 const Footer: React.FC = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="pt-12 pb-8 border-t bg-brand-50 border-brand-100">
-        <div className="px-4 mx-auto text-center max-w-6xl sm:px-6 lg:px-8">
+    <footer className="bg-slate-950 text-slate-400">
+      {/* ── Top accent line ──────────────────────────────────────────────────── */}
+      <div className="h-px bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
 
-        {/* Brand Name */}
-        <div className="mb-8">
-          <span className="text-2xl font-bold tracking-tight text-slate-900 lg:text-3xl">
-            TREVOROS
-          </span>
+      {/* ── Main grid ────────────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-16 pb-10">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-16">
+
+          {/* ── Col 1 — Brand ───────────────────────────────────────────────── */}
+          <div className="flex flex-col gap-6 sm:col-span-2 lg:col-span-1">
+            {/* Brand identity */}
+            <div>
+              <p className="text-2xl font-bold tracking-tight text-white">
+                TREVOROS
+              </p>
+              <p className="mt-0.5 text-xs tracking-[0.3em] uppercase text-brand-400 font-medium">
+                Fintech
+              </p>
+            </div>
+
+            {/* Short description */}
+            <p className="text-sm leading-relaxed text-slate-400 max-w-xs">
+              Evaluating traders through data, behaviour, and performance.
+              Discipline is the edge.
+            </p>
+
+            {/* Social icons */}
+            <div className="flex items-center gap-3">
+              <a
+                href={SOCIAL_LINKS.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow us on Instagram"
+                className="group flex items-center justify-center w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-brand-600 hover:border-brand-500 transition-all duration-300"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a
+                href={SOCIAL_LINKS.x}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow us on X"
+                className="group flex items-center justify-center w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 hover:border-slate-500 transition-all duration-300"
+              >
+                <XIcon className="w-4 h-4" />
+              </a>
+              <a
+                href={SOCIAL_LINKS.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow us on LinkedIn"
+                className="group flex items-center justify-center w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white hover:bg-brand-700 hover:border-brand-500 transition-all duration-300"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+
+          {/* ── Col 2 — Platform links ──────────────────────────────────────── */}
+          <div>
+            <p className="mb-6 text-xs font-semibold tracking-[0.2em] uppercase text-slate-500">
+              Platform
+            </p>
+            <ul className="space-y-3.5">
+              {PLATFORM_LINKS.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="group inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors duration-200"
+                  >
+                    <span>{link.label}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* ── Col 3 — Contact ─────────────────────────────────────────────── */}
+          <div>
+            <p className="mb-6 text-xs font-semibold tracking-[0.2em] uppercase text-slate-500">
+              Connect
+            </p>
+
+            <a
+              href="mailto:hello@trevoros.com"
+              className="group inline-flex items-center gap-2.5 mb-8 text-sm text-slate-400 hover:text-white transition-colors duration-200"
+            >
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 group-hover:border-brand-500 transition-colors duration-200">
+                <Mail className="w-4 h-4" />
+              </span>
+              <span>hello@trevoros.com</span>
+            </a>
+
+            {/* ── Live badge ──────────────────────────────────────────────── */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-emerald-950/60 border border-emerald-800/50">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-xs font-semibold text-emerald-400 tracking-wide">
+                MVP Live Now
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Social Icons */}
-        <div className="flex items-center justify-center gap-4 mb-6">
-          {/* Instagram */}
-          <a
-            href={SOCIAL_LINKS.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Follow us on Instagram"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-brand-600 hover:border-brand-400 hover:bg-brand-50 transition-all duration-300 hover:scale-105 shadow-sm"
-          >
-            <Instagram className="w-5 h-5" />
-          </a>
-
-          {/* X (Twitter) */}
-          <a
-            href={SOCIAL_LINKS.x}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Follow us on X"
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-400 hover:bg-slate-50 transition-all duration-300 hover:scale-110 shadow-sm"
-          >
-            <XIcon className="w-5 h-5" />
-          </a>
-
-          {/* LinkedIn */}
-          <a
-            href={SOCIAL_LINKS.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Follow us on LinkedIn"
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-brand-700 hover:border-brand-400 hover:bg-brand-50 transition-all duration-300 hover:scale-110 shadow-sm"
-          >
-            <Linkedin className="w-5 h-5" />
-          </a>
+        {/* ── Disclaimer ───────────────────────────────────────────────────── */}
+        <div className="mt-14 pt-8 border-t border-slate-800">
+          <div className="max-w-4xl space-y-2 text-xs leading-relaxed text-slate-500">
+            <p>
+              TREVOROS does not provide investment advice, trading signals, or
+              guaranteed returns. All funded accounts are subject to evaluation,
+              rules, and performance-based agreements.
+            </p>
+            <p className="font-medium text-slate-400">
+              Trading involves risk. Discipline is mandatory.
+            </p>
+          </div>
         </div>
 
-        {/* Email */}
-        <div className="mb-10">
-          <a
-            href="mailto:hello@trevoros.com"
-            className="inline-flex items-center gap-2 text-base font-medium text-slate-600 hover:text-brand-600 transition-colors duration-200 lg:text-lg"
-          >
-            <Mail className="w-5 h-5" />
-            hello@trevoros.com
-          </a>
-        </div>
-
-        {/* Disclaimer */}
-        <div className="max-w-4xl mx-auto space-y-4 text-base leading-relaxed text-slate-500 lg:text-lg">
-          <p>
-            TREVOROS does not provide investment advice, trading signals, or
-            guaranteed returns. All funded accounts are subject to evaluation,
-            rules, and performance-based agreements.
+        {/* ── Bottom bar ───────────────────────────────────────────────────── */}
+        <div className="mt-8 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-slate-600">
+            &copy; {currentYear} TREVOROS. All rights reserved.
           </p>
-          <p className="text-base lg:text-lg font-medium text-slate-600">
-            Trading involves risk. Discipline is mandatory.
+          <p className="text-xs text-slate-700">
+            Built for disciplined traders.
           </p>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="pt-8 mt-12 text-sm border-t border-brand-200/50 text-slate-400 lg:text-base">
-          &copy; {new Date().getFullYear()} TREVOROS. All rights reserved.
         </div>
       </div>
     </footer>

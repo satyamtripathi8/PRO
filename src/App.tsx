@@ -16,6 +16,7 @@ import Dashboard from './pages/Dashboard'
 import MainLayout from './components/layout/Mainlayout'
 import Trade from './pages/Trade'
 import FullscreenChart from './pages/FullscreenChart'
+import StandaloneChart from './pages/StandaloneChart'
 import Profile from './pages/Profile'
 import Learn from './pages/Learn'
 import Analytics from './pages/Analytics'
@@ -28,9 +29,10 @@ import SettingsPage from './pages/SettingsPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import AdminDashboard from './pages/AdminDashboard'
 import LandingPage from './pages/LandingPage'
+import CompetitionsPage from './pages/CompetitionsPage'
+import CompetitionDetailPage from './pages/CompetitionDetailPage'
+import CompetitionTradePage from './pages/CompetitionTradePage'
 import { useAuth } from './context/AuthContext'
-import { useToast } from './hooks/useToast'
-import ToastContainer from './components/common/Toast'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -48,11 +50,8 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { toasts, dismissToast } = useToast();
-
   return (
     <>
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthLayout />} >
@@ -83,8 +82,13 @@ function App() {
           <Route path="sell/:symbol" element={<Sell />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
+          <Route path="competitions" element={<CompetitionsPage />} />
+          <Route path="competitions/:id" element={<CompetitionDetailPage />} />
+          <Route path="competitions/:id/trade" element={<CompetitionTradePage />} />
         </Route>
         <Route path='/Home/admin' element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        {/* Standalone chart — no sidebar/topbar, opens in a real new browser tab */}
+        <Route path='/chart' element={<ProtectedRoute><StandaloneChart /></ProtectedRoute>} />
       </Routes>
     </>
   )

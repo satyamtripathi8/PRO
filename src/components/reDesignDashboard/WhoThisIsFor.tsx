@@ -23,48 +23,48 @@ export default function WhoThisIsFor() {
   ];
 
   return (
-    <section className="relative overflow-hidden py-20 bg-gradient-to-b from-white to-sky-50">
-      <div className="max-w-7xl px-6 mx-auto">
+    <section className="relative overflow-hidden py-14 bg-gradient-to-b from-white to-sky-50 sm:py-18 lg:py-22">
+      <div className="max-w-7xl px-5 mx-auto sm:px-8 lg:px-10">
         {/* Heading */}
-        <div className="mb-20 text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-5xl text-slate-900">
+        <div className="mb-10 text-center sm:mb-14">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-slate-900">
             Who This Is For
           </h2>
-          <p className="text-lg sm:text-xl lg:text-2xl text-slate-500">
+          <p className="text-sm sm:text-base lg:text-lg text-slate-500">
             Trevoros is built for disciplined traders who value structure.
           </p>
         </div>
 
         {/* Cards */}
-        <div className="grid gap-12 md:grid-cols-3">
+        <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
           {cards.map((card, index) => {
             const Icon = card.icon;
 
             return (
               <div
                 key={index}
-                className="relative p-12 text-center transition-all duration-500 border shadow-sm group bg-white/70 backdrop-blur-sm border-sky-100 rounded-3xl hover:shadow-xl hover:-translate-y-3"
+                className="relative p-8 text-center transition-all duration-500 border shadow-sm group bg-white/70 backdrop-blur-sm border-sky-100 rounded-2xl hover:shadow-xl hover:-translate-y-2 sm:p-10"
               >
                 {/* Icon Circle */}
-                <div className="flex items-center justify-center w-20 h-20 mx-auto mb-8 transition-all duration-500 rounded-full bg-sky-100 group-hover:bg-sky-500">
-                  <Icon className="transition-colors duration-500 w-10 h-10 text-sky-600 group-hover:text-white group-hover:rotate-6" />
+                <div className="flex items-center justify-center w-14 h-14 mx-auto mb-6 transition-all duration-500 rounded-full bg-sky-100 group-hover:bg-sky-500">
+                  <Icon className="transition-colors duration-500 w-7 h-7 text-sky-600 group-hover:text-white group-hover:rotate-6" />
                 </div>
 
                 {/* Text */}
-                <h3 className="text-xl font-semibold leading-relaxed transition-colors duration-300 text-slate-800 group-hover:text-sky-600 lg:text-2xl">
+                <h3 className="text-base font-semibold leading-relaxed transition-colors duration-300 text-slate-800 group-hover:text-sky-600 sm:text-lg">
                   {card.text}
                 </h3>
 
                 {/* Subtle animated bottom line */}
-                <div className="absolute bottom-0 w-0 h-1 transition-all duration-500 rounded-full left-1/2 bg-sky-400 group-hover:w-20 group-hover:-translate-x-1/2"></div>
+                <div className="absolute bottom-0 w-0 h-1 transition-all duration-500 rounded-full left-1/2 bg-sky-400 group-hover:w-16 group-hover:-translate-x-1/2"></div>
               </div>
             );
           })}
         </div>
 
         {/* Bottom Note */}
-        <div className="mt-20 text-center">
-          <p className="text-xl italic text-slate-500 lg:text-2xl">
+        <div className="mt-12 text-center sm:mt-14">
+          <p className="text-base italic text-slate-500 sm:text-lg">
             If you're looking for shortcuts, this is not for you.
           </p>
         </div>

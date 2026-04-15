@@ -45,6 +45,7 @@ const items: MenuItem[] = [
   { name: "Trade", icon: LineChart, path: "/Home/trade" },
   { name: "Positions", icon: Wallet, path: "/Home/positions" },
   { name: "Leaderboard", icon: Trophy, path: "/Home/leaderboard" },
+  { name: "Competitions", icon: Shield, path: "/Home/competitions" },
   { name: "AI Coach", icon: MessageSquare, path: "/Home/ai-chat" },
   { name: "Learn", icon: BookOpen, path: "/Home/learn" },
   { name: "Mentorship", icon: Users, path: "/Home/mentorship" },

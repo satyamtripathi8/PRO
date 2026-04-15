@@ -129,9 +129,9 @@ const FAQ: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-sky-50 to-white">
-      <div className="max-w-5xl px-6 mx-auto">
-        <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl lg:text-5xl text-slate-900 mb-12">
+    <section className="py-14 bg-gradient-to-b from-sky-50 to-white sm:py-18 lg:py-22">
+      <div className="max-w-4xl px-5 mx-auto sm:px-8">
+        <h2 className="text-3xl font-bold text-center sm:text-4xl lg:text-5xl text-slate-900 mb-10 sm:mb-12">
           Frequently Asked Questions
         </h2>
 
@@ -142,16 +142,15 @@ const FAQ: React.FC = () => {
             return (
               <div
                 key={catIndex}
-                className="overflow-hidden bg-white border shadow-sm rounded-3xl border-slate-200"
+                className="overflow-hidden bg-white border shadow-sm rounded-2xl border-slate-200"
               >
                 <button
                   onClick={() => toggleCategory(catIndex)}
-                  className="flex items-center justify-between w-full px-6 py-4 text-lg font-semibold text-left transition text-slate-900 hover:bg-slate-50 lg:text-xl"
+                  className="flex items-center justify-between w-full px-5 py-4 text-base font-semibold text-left transition text-slate-900 hover:bg-slate-50 sm:px-6 sm:py-5 sm:text-lg"
                 >
                   {cat.category}
-
                   <ChevronDown
-                    className={`w-6 h-6 transition-transform duration-300 ${
+                    className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 ${
                       isCategoryOpen ? "rotate-180 text-sky-500" : ""
                     }`}
                   />
@@ -164,7 +163,7 @@ const FAQ: React.FC = () => {
                       : "max-h-0 opacity-0"
                   } overflow-hidden`}
                 >
-                  <div className="px-6 pb-6 space-y-4">
+                  <div className="px-4 pb-4 space-y-3 sm:px-5 sm:pb-5">
                     {cat.questions.map((item, qIndex) => {
                       const key = `${catIndex}-${qIndex}`;
                       const isOpen = activeQuestion === key;
@@ -172,16 +171,15 @@ const FAQ: React.FC = () => {
                       return (
                         <div
                           key={qIndex}
-                          className="overflow-hidden bg-white border border-slate-200 rounded-2xl"
+                          className="overflow-hidden bg-white border border-slate-200 rounded-xl"
                         >
                           <button
                             onClick={() => toggleQuestion(catIndex, qIndex)}
-                            className="flex items-center justify-between w-full px-6 py-5 text-base font-medium text-left transition text-slate-800 hover:bg-slate-50 lg:text-lg"
+                            className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium text-left transition text-slate-800 hover:bg-slate-50 sm:px-5 sm:py-4 sm:text-base"
                           >
-                            {item.q}
-
+                            <span className="pr-4">{item.q}</span>
                             <ChevronDown
-                              className={`w-5 h-5 transition-transform duration-300 ${
+                              className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 ${
                                 isOpen ? "rotate-180 text-sky-500" : ""
                               }`}
                             />
@@ -195,7 +193,7 @@ const FAQ: React.FC = () => {
                             }`}
                           >
                             <div className="overflow-hidden">
-                              <p className="px-6 pb-5 text-base leading-relaxed text-slate-600 lg:text-lg">
+                              <p className="px-4 pb-4 text-sm leading-relaxed text-slate-600 sm:px-5 sm:pb-4 sm:text-base">
                                 {item.a}
                               </p>
                             </div>
