@@ -10,7 +10,7 @@ const Hero: React.FC<HeroProps> = ({ onHowItWorksClick }) => {
   const bulletPoints: string[] = [
     "We dont give signals",
     "We dont promise overnight profits",
-    "We fund traders who prove discipline",
+    "We support traders who prove discipline",
   ];
 
   return (

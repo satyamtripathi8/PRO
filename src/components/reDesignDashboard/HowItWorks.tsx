@@ -1,5 +1,5 @@
 import React, { forwardRef, type ReactElement } from "react";
-import { UserPlus, BookOpen, LineChart, Wallet, Rocket } from "lucide-react";
+import { UserPlus, BookOpen, LineChart } from "lucide-react";
 
 interface Step {
   icon: ReactElement;
@@ -29,16 +29,6 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
       description:
         "Clear a basic MCQ test to ensure foundational understanding.",
     },
-    {
-      icon: <Wallet />,
-      title: "Get Funded",
-      description: "Traders who pass gain access to company capital.",
-    },
-    {
-      icon: <Rocket />,
-      title: "Grow with Discipline",
-      description: "Capital and profit share increase gradually.",
-    },
   ];
 
   return (
@@ -67,7 +57,7 @@ const HowItWorks = forwardRef<HTMLDivElement>((_, ref) => {
             <div className="h-full bg-brand-500 animate-progress"></div>
           </div>
 
-          <div className="relative z-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-5 lg:gap-8">
+          <div className="relative z-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3 lg:gap-8">
             {steps.map((step, index) => (
               <div
                 key={index}
