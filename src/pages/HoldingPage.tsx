@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import './HoldingPage.css';
-
-// ─── Taglines that rotate ───
-const TAGLINES = [
-  'Built for scale.',
-  'Built for traders.',
-  'Built for the future.',
-  'Beyond dashboards.',
-  'Beyond ordinary platforms.',
-];
+import SplashScreen from '../components/reDesignDashboard/SplashScreen';
 
 // ─── 3D Orb Particle ───
 interface OrbParticle {
@@ -39,27 +31,27 @@ interface BGParticle {
 export default function HoldingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
+  const [showSplash, setShowSplash] = useState(true);
+  const [introExiting, setIntroExiting] = useState(false);
   const [introComplete, setIntroComplete] = useState(false);
-  const [activeTagline, setActiveTagline] = useState(0);
-  const [taglineState, setTaglineState] = useState<'active' | 'exit'>('active');
 
-  // ─── Rotating taglines ───
+  // ─── Transition sequence from Splash to Cinematic Main Page ───
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTaglineState('exit');
-      setTimeout(() => {
-        setActiveTagline((prev) => (prev + 1) % TAGLINES.length);
-        setTaglineState('active');
-      }, 500);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!showSplash) {
+      const exitTimer = setTimeout(() => {
+        setIntroExiting(true);
+      }, 1200);
 
-  // ─── Intro timer ───
-  useEffect(() => {
-    const timer = setTimeout(() => setIntroComplete(true), 3600);
-    return () => clearTimeout(timer);
-  }, []);
+      const completeTimer = setTimeout(() => {
+        setIntroComplete(true);
+      }, 2000);
+
+      return () => {
+        clearTimeout(exitTimer);
+        clearTimeout(completeTimer);
+      };
+    }
+  }, [showSplash]);
 
   // ─── Canvas: 3D Orb + Background Particles ───
   const initCanvas = useCallback(() => {
@@ -269,9 +261,14 @@ export default function HoldingPage() {
 
   return (
     <div className="holding-page" id="holding-page">
+      {/* ── Previous Splash Screen ── */}
+      {showSplash && (
+        <SplashScreen onComplete={() => setShowSplash(false)} />
+      )}
+
       {/* ── Cinematic Intro ── */}
-      {!introComplete && (
-        <div className="intro-overlay" id="intro-overlay">
+      {!showSplash && !introComplete && (
+        <div className={`intro-overlay ${introExiting ? 'exiting' : ''}`} id="intro-overlay">
           <div className="intro-scanlines" />
           <div className="intro-grid" />
           <div
@@ -304,37 +301,28 @@ export default function HoldingPage() {
       <div className="vignette" />
 
       {/* ── Main Content ── */}
-      <main className="content-layer" id="content-layer">
+      <main className={`content-layer ${introComplete ? 'revealed' : ''}`} id="content-layer">
         {/* Brand badge */}
         <div className="brand-badge" id="brand-badge">
           <span className="badge-dot" />
-          <span className="badge-text">Engineering in Progress</span>
+          <span className="badge-text">WEBSITE UNDER MAINTENANCE</span>
         </div>
 
         {/* Hero */}
-        <h1 className="hero-headline" id="hero-headline">
-          Something Bigger
-          <br />
-          Is Loading.
+        <h1 className="hero-headline" id="hero-headline" style={{ maxWidth: '850px' }}>
+          The MVP is live and your feedback has been incredibly valuable.
         </h1>
 
         {/* Subheadline */}
-        <p className="sub-headline" id="sub-headline">
-          We launched the <strong>MVP</strong>.
-          <br />
-          Now we're engineering the experience it truly deserves.
+        <p className="sub-headline" id="sub-headline" style={{ maxWidth: '650px' }}>
+          We’re now rebuilding the platform experience to deliver something faster, smarter, and more powerful.
         </p>
 
-        {/* Rotating taglines */}
-        <div className="tagline-container" id="tagline-container">
-          {TAGLINES.map((line, i) => (
-            <div
-              key={line}
-              className={`tagline ${i === activeTagline ? taglineState : ''}`}
-            >
-              {line}
-            </div>
-          ))}
+        {/* Status tagline */}
+        <div className="tagline-container" id="tagline-container" style={{ height: 'auto', marginBottom: '2.5rem' }}>
+          <div className="tagline active" style={{ position: 'relative', fontSize: '1.4rem', fontWeight: 600 }}>
+            Final Product Loading...
+          </div>
         </div>
 
         {/* Divider */}
@@ -342,11 +330,9 @@ export default function HoldingPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="holding-footer" id="holding-footer">
-        <div className="footer-brand">Trevoros</div>
-        <div className="footer-tagline">
-          <span className="footer-dot" />
-          The future of trading is being built.
+      <footer className={`holding-footer ${introComplete ? 'revealed' : ''}`} id="holding-footer">
+        <div className="footer-brand" style={{ fontSize: '0.95rem', color: 'rgba(240, 240, 245, 0.65)', fontWeight: 400 }}>
+          Thank you for being part of the early journey.
         </div>
       </footer>
     </div>
