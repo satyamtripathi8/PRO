@@ -57,7 +57,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 function App() {
   // Set to true to force render the cinematic holding page at root,
   // or false to run the full application routing.
-  const isHoldingMode = false;
+  const isHoldingMode = true;
 
   if (isHoldingMode) {
     return <HoldingPage />;
