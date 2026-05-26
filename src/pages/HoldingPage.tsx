@@ -32,26 +32,7 @@ export default function HoldingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
   const [showSplash, setShowSplash] = useState(true);
-  const [introExiting, setIntroExiting] = useState(false);
   const [introComplete, setIntroComplete] = useState(false);
-
-  // ─── Transition sequence from Splash to Cinematic Main Page ───
-  useEffect(() => {
-    if (!showSplash) {
-      const exitTimer = setTimeout(() => {
-        setIntroExiting(true);
-      }, 1200);
-
-      const completeTimer = setTimeout(() => {
-        setIntroComplete(true);
-      }, 2000);
-
-      return () => {
-        clearTimeout(exitTimer);
-        clearTimeout(completeTimer);
-      };
-    }
-  }, [showSplash]);
 
   // ─── Canvas: 3D Orb + Background Particles ───
   const initCanvas = useCallback(() => {
@@ -263,21 +244,12 @@ export default function HoldingPage() {
     <div className="holding-page" id="holding-page">
       {/* ── Previous Splash Screen ── */}
       {showSplash && (
-        <SplashScreen onComplete={() => setShowSplash(false)} />
-      )}
-
-      {/* ── Cinematic Intro ── */}
-      {!showSplash && !introComplete && (
-        <div className={`intro-overlay ${introExiting ? 'exiting' : ''}`} id="intro-overlay">
-          <div className="intro-scanlines" />
-          <div className="intro-grid" />
-          <div
-            className="intro-glitch-text"
-            data-text="TREVOROS"
-          >
-            TREVOROS
-          </div>
-        </div>
+        <SplashScreen
+          onComplete={() => {
+            setShowSplash(false);
+            setIntroComplete(true);
+          }}
+        />
       )}
 
       {/* ── Background Layers ── */}
@@ -308,22 +280,15 @@ export default function HoldingPage() {
           <span className="badge-text">WEBSITE UNDER MAINTENANCE</span>
         </div>
 
-        {/* Hero */}
+        {/* Hero Headline */}
         <h1 className="hero-headline" id="hero-headline" style={{ maxWidth: '850px' }}>
-          The MVP is live and your feedback has been incredibly valuable.
+          Final Product Loading...
         </h1>
 
         {/* Subheadline */}
         <p className="sub-headline" id="sub-headline" style={{ maxWidth: '650px' }}>
           We’re now rebuilding the platform experience to deliver something faster, smarter, and more powerful.
         </p>
-
-        {/* Status tagline */}
-        <div className="tagline-container" id="tagline-container" style={{ height: 'auto', marginBottom: '2.5rem' }}>
-          <div className="tagline active" style={{ position: 'relative', fontSize: '1.4rem', fontWeight: 600 }}>
-            Final Product Loading...
-          </div>
-        </div>
 
         {/* Divider */}
         <div className="divider" />
