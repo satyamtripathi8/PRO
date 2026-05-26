@@ -15,7 +15,7 @@ export default function Profile() {
     walletApi.get().then(res => setWallet(res.data)).catch(() => {});
     analyticsApi.getStats().then(res => setStats(res.data)).catch(() => {});
     ordersApi.list({ limit: 200 }).then(res => {
-      setTrades(res.data?.data ?? []);
+      setTrades(res.data ?? []);
     }).catch(() => {});
   }, []);
 

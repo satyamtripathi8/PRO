@@ -1,140 +1,112 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { X, Settings, Download, Share2 } from 'lucide-react';
-import CandlestickChart from '../components/trade/CandlestickChart';
-import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
+import { X, ExternalLink } from 'lucide-react';
+import MultiChartLayout from '../components/trade/MultiChartLayout';
 
-interface FullscreenChartState {
-  symbol: string;
-  timeframe: string;
+interface RouteState {
+  symbol?: string;
+  timeframe?: string;
 }
 
 export default function FullscreenChart() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate       = useNavigate();
+  const location       = useLocation();
+  const [searchParams] = useSearchParams();
 
-  const [symbol, setSymbol] = useState<string>('');
-  const [timeframe, setTimeframe] = useState<string>('1D');
+  const [symbol,    setSymbol]    = useState('NIFTY50');
+  const [timeframe, setTimeframe] = useState('1D');
+  const [mounted,   setMounted]   = useState(false);
 
-  // Initialize from location state or query params
+  // Resolve symbol + timeframe from router state or query params
   useEffect(() => {
-    const state = location.state as FullscreenChartState;
-    const paramSymbol = searchParams.get('symbol');
-    const paramTimeframe = searchParams.get('timeframe') || '1D';
+    const state    = location.state as RouteState | undefined;
+    const paramSym = searchParams.get('symbol');
+    const paramTf  = searchParams.get('timeframe') ?? '1D';
 
     if (state?.symbol) {
       setSymbol(state.symbol);
-      setTimeframe(state.timeframe || '1D');
-    } else if (paramSymbol) {
-      setSymbol(paramSymbol);
-      setTimeframe(paramTimeframe);
-    } else {
-      // Fallback to NIFTY50
-      setSymbol('NIFTY50');
-      setTimeframe('1D');
+      setTimeframe(state.timeframe ?? '1D');
+    } else if (paramSym) {
+      setSymbol(paramSym);
+      setTimeframe(paramTf);
     }
-  }, [location.state, searchParams]);
+    setMounted(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update URL params whenever symbol or timeframe changes
+  // ESC key to close
   useEffect(() => {
-    if (symbol) {
-      setSearchParams({ symbol, timeframe });
-    }
-  }, [symbol, timeframe, setSearchParams]);
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') navigate(-1); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [navigate]);
 
-  const handleClose = () => {
-    navigate(-1);
+  // Open this chart in a brand-new browser tab (standalone, no sidebar)
+  const openNewTab = () => {
+    window.open(
+      `/chart?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
   };
 
-  const handleDownload = () => {
-    // Placeholder for chart download functionality
-    alert('Chart download feature coming soon');
-  };
+  // Don't render until we know the symbol (avoids flash with wrong default)
+  if (!mounted) return null;
 
-  const handleShare = () => {
-    const url = `${window.location.origin}${location.pathname}?symbol=${symbol}&timeframe=${timeframe}`;
-    navigator.clipboard.writeText(url);
-    alert('Chart link copied to clipboard!');
-  };
+  // ── Render via portal to document.body so it sits above MainLayout's
+  //    sidebar and topbar entirely (no z-index stacking-context fights)
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-[#0a1628]">
 
-  const timeframes = ['1M', '5M', '15M', '1H', '1D', '1W', '1Mo'];
-
-  return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-white text-xl font-bold">{symbol}</h1>
-          <div className="flex gap-2">
-            {timeframes.map(tf => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  timeframe === tf
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                {tf}
-              </button>
-            ))}
+      {/* ── Slim header bar ── */}
+      <div className="flex items-center justify-between px-5 py-2.5 bg-[#060e1a] border-b border-slate-800 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          {/* TrevorOS brand mark */}
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center">
+              <span className="text-white text-[9px] font-black leading-none">T</span>
+            </div>
+            <span className="text-slate-400 text-xs font-medium hidden sm:block">TrevorOS Pro Chart</span>
           </div>
+          <span className="text-slate-700 text-xs hidden md:block">·  {symbol}  ·  {timeframe}</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Toolbar */}
+        <div className="flex items-center gap-1">
+          {/* Open in new tab */}
           <button
-            onClick={handleDownload}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white"
-            title="Download chart"
+            onClick={openNewTab}
+            title="Open in new browser tab"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 rounded-lg transition-colors text-xs"
           >
-            <Download className="w-5 h-5" />
+            <ExternalLink size={13} />
+            <span className="hidden sm:inline">New tab</span>
           </button>
 
-          <button
-            onClick={handleShare}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white"
-            title="Share chart"
-          >
-            <Share2 className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={() => {}}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white"
-            title="Settings"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
+          {/* ESC hint */}
+          <span className="text-slate-600 text-[10px] hidden sm:flex items-center gap-1 px-2">
+            <kbd className="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-400">ESC</kbd>
+            close
+          </span>
 
           {/* Close button */}
           <button
-            onClick={handleClose}
-            className="p-2 hover:bg-red-600/20 rounded-lg transition-colors text-red-400 hover:text-red-300 ml-2"
-            title="Exit fullscreen (Esc)"
+            onClick={() => navigate(-1)}
+            title="Close fullscreen (ESC)"
+            className="p-2 rounded-lg text-slate-500 hover:bg-red-900/30 hover:text-red-400 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X size={16} />
           </button>
         </div>
       </div>
 
-      {/* Chart Area */}
-      <div className="flex-1 overflow-hidden bg-black p-4">
-        <ChartErrorBoundary>
-          <CandlestickChart 
-            symbol={symbol} 
-            range={timeframe}
-            height={typeof window !== 'undefined' ? window.innerHeight - 100 : 600}
-          />
-        </ChartErrorBoundary>
+      {/* ── Multi-chart body ── */}
+      <div className="flex-1 overflow-hidden">
+        <MultiChartLayout
+          initialSymbol={symbol}
+          initialTimeframe={timeframe}
+        />
       </div>
-
-      {/* Keyboard shortcut hint */}
-      <div className="bg-gray-900 border-t border-gray-800 px-6 py-2 text-xs text-gray-500">
-        Press <kbd className="bg-gray-800 px-2 py-1 rounded">ESC</kbd> to exit fullscreen
-      </div>
-    </div>
+    </div>,
+    document.body
   );
 }

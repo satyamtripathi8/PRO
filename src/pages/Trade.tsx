@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, TrendingUp, TrendingDown, ArrowLeft, Wallet, Package, History, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMarketData } from '../hooks/useMarketData';
 import { marketApi, ordersApi, walletApi } from '../lib/api';
-import CandlestickChart from '../components/trade/CandlestickChart';
+import ProTradingChart from '../components/trade/ProTradingChart';
 import ChartErrorBoundary from '../components/trade/ChartErrorBoundary';
 
 // ─── Symbol Config ────────────────────────────────────────────────────────────
@@ -280,7 +280,7 @@ export default function Trade() {
         ]);
         setWalletBalance(walletRes.data?.balance ?? null);
         setHoldings(holdingsRes.data ?? []);
-        setRecentOrders(ordersRes.data?.data ?? []);
+        setRecentOrders(ordersRes.data ?? []);
       } catch {}
     };
     fetchData();
@@ -340,7 +340,7 @@ export default function Trade() {
         onOrderPlaced={() => {
           walletApi.get().then(res => setWalletBalance(res.data?.balance ?? null));
           walletApi.getHoldings().then(res => setHoldings(res.data ?? []));
-          ordersApi.list({ limit: 10 }).then(res => setRecentOrders(res.data?.data ?? []));
+          ordersApi.list({ limit: 10 }).then(res => setRecentOrders(res.data ?? []));
         }}
       />
     );
@@ -652,7 +652,7 @@ function StockDetailView({
   onOrderPlaced?: () => void;
 }) {
   const navigate = useNavigate();
-  const [timeframe, setTimeframe] = useState('1D');
+  const [timeframe] = useState('1D');
   const [tradeSide, setTradeSide] = useState<'BUY' | 'SELL' | null>(null);
   const [qty, setQty] = useState(1);
   const [orderType, setOrderType] = useState<'MARKET' | 'LIMIT'>('MARKET');
@@ -776,36 +776,18 @@ function StockDetailView({
       <div className="flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start gap-6 lg:gap-4 overflow-hidden">
         {/* Main Chart Area */}
         <div className="flex-1 min-w-0 flex flex-col">
-          {/* Timeframe Selector */}
-          <div className="flex items-center gap-2 px-6 py-3 border-b bg-gray-50">
-            {['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'].map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  timeframe === tf
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-white hover:shadow'
-                }`}
-              >
-                {tf}
-              </button>
-            ))}
-          </div>
-
           {/* Chart */}
           <div className="flex-1 p-4">
-            <div className="h-full w-full min-h-[400px] rounded-lg overflow-hidden border">
-              <ChartErrorBoundary>
-                <CandlestickChart 
-                  symbol={symbol} 
-                  range={timeframe} 
-                  height={400} 
-                  livePrice={q?.price}
-                  onFullscreen={() => navigate('/Home/trade/fullscreen', { state: { symbol, timeframe } })}
-                />
-              </ChartErrorBoundary>
-            </div>
+            <ChartErrorBoundary>
+              <ProTradingChart
+                symbol={symbol}
+                range={timeframe}
+                height={460}
+                livePrice={q?.price}
+                showTradePanel={false}
+                onFullscreen={() => navigate('/Home/trade/fullscreen', { state: { symbol, timeframe } })}
+              />
+            </ChartErrorBoundary>
           </div>
 
           {/* Stats Grid */}

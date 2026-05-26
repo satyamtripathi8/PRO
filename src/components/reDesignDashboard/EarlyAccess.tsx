@@ -6,12 +6,12 @@ const ContactForm: React.FC = () => {
 
   if (state.succeeded) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-slate-50 px-4 py-16">
-        <div className="w-full max-w-2xl p-12 text-center bg-white shadow-xl rounded-3xl">
-          <h2 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
+      <div className="min-h-[50vh] flex items-center justify-center bg-slate-50 px-4 py-12 sm:py-16">
+        <div className="w-full max-w-xl p-8 text-center bg-white shadow-xl rounded-2xl sm:p-10">
+          <h2 className="mb-4 text-3xl font-bold text-slate-900 sm:text-4xl">
             You're on the list 🚀
           </h2>
-          <p className="text-xl text-slate-600 lg:text-2xl">
+          <p className="text-base text-slate-600 sm:text-lg">
             We'll notify you when we launch. Stay tuned!
           </p>
         </div>
@@ -20,17 +20,17 @@ const ContactForm: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center bg-slate-50 px-4 py-16">
+    <div className="min-h-[50vh] flex items-center justify-center bg-slate-50 px-4 py-12 sm:py-16">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl p-12 space-y-8 bg-white shadow-xl rounded-3xl"
+        className="w-full max-w-xl p-6 space-y-6 bg-white shadow-xl rounded-2xl sm:p-8 sm:space-y-7"
       >
         {/* Heading */}
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-slate-900 lg:text-5xl">
+          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl lg:text-4xl">
             Join Early Access
           </h2>
-          <p className="mt-3 text-lg text-slate-500 lg:text-xl">
+          <p className="mt-2 text-sm text-slate-500 sm:text-base">
             Be the first to know when we launch
           </p>
         </div>
@@ -39,7 +39,7 @@ const ContactForm: React.FC = () => {
         <div>
           <label
             htmlFor="email"
-            className="block mb-3 text-base font-medium text-slate-700 lg:text-lg"
+            className="block mb-2 text-sm font-medium text-slate-700 sm:text-base"
           >
             Email Address
           </label>
@@ -49,13 +49,13 @@ const ContactForm: React.FC = () => {
             name="email"
             required
             placeholder="you@example.com"
-            className="w-full px-5 py-4 text-base rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 transition lg:text-lg"
+            className="w-full px-4 py-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 transition sm:text-base"
           />
           <ValidationError
             prefix="Email"
             field="email"
             errors={state.errors}
-            className="mt-2 text-base text-red-500"
+            className="mt-1.5 text-sm text-red-500"
           />
         </div>
 
@@ -63,7 +63,7 @@ const ContactForm: React.FC = () => {
         <div>
           <label
             htmlFor="message"
-            className="block mb-3 text-base font-medium text-slate-700 lg:text-lg"
+            className="block mb-2 text-sm font-medium text-slate-700 sm:text-base"
           >
             Message (optional)
           </label>
@@ -72,13 +72,13 @@ const ContactForm: React.FC = () => {
             name="message"
             rows={4}
             placeholder="Tell us anything..."
-            className="w-full px-5 py-4 text-base rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 transition resize-none lg:text-lg"
+            className="w-full px-4 py-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 transition resize-none sm:text-base"
           />
           <ValidationError
             prefix="Message"
             field="message"
             errors={state.errors}
-            className="mt-2 text-base text-red-500"
+            className="mt-1.5 text-sm text-red-500"
           />
         </div>
 
@@ -86,7 +86,7 @@ const ContactForm: React.FC = () => {
         <button
           type="submit"
           disabled={state.submitting}
-          className={`w-full py-4 rounded-xl font-semibold text-lg text-white transition lg:text-xl lg:py-5 ${
+          className={`w-full py-3 rounded-xl font-semibold text-base text-white transition sm:py-3.5 sm:text-lg ${
             state.submitting
               ? "bg-slate-400 cursor-not-allowed"
               : "bg-brand-500 hover:bg-brand-600 hover:shadow-lg"

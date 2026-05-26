@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType, LineStyle, LineSeries } from 'lightweight-charts';
 import type { IChartApi, Time } from 'lightweight-charts';
 import { portfolioApi } from '../../lib/api';
-import { RefreshCw, TrendingUp } from 'lucide-react';
+import { RefreshCw, TrendingUp, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface PortfolioHistoryPoint {
   date: string;
@@ -226,6 +226,36 @@ export default function PortfolioChart({ days = 30, height = 400, className }: P
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
+        <div className="absolute top-2 right-2 z-10 flex gap-1">
+          <button
+            onClick={() => {
+              if (!chartRef.current) return;
+              const range = chartRef.current.timeScale().getVisibleLogicalRange();
+              if (!range) return;
+              const center = (range.from + range.to) / 2;
+              const half = (range.to - range.from) * 0.35;
+              chartRef.current.timeScale().setVisibleLogicalRange({ from: center - half, to: center + half });
+            }}
+            className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors"
+            title="Zoom In"
+          >
+            <ZoomIn size={14} className="text-gray-600" />
+          </button>
+          <button
+            onClick={() => {
+              if (!chartRef.current) return;
+              const range = chartRef.current.timeScale().getVisibleLogicalRange();
+              if (!range) return;
+              const center = (range.from + range.to) / 2;
+              const half = (range.to - range.from) * 0.65;
+              chartRef.current.timeScale().setVisibleLogicalRange({ from: center - half, to: center + half });
+            }}
+            className="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg shadow-sm transition-colors"
+            title="Zoom Out"
+          >
+            <ZoomOut size={14} className="text-gray-600" />
+          </button>
+        </div>
         <div
           ref={chartContainerRef}
           style={{ height: `${height}px` }}

@@ -53,7 +53,7 @@ export default function LandingPage() {
       />
 
       {/* Hero Section */}
-      <div className="pt-24">
+      <div className="pt-16 sm:pt-18">
         <Hero onHowItWorksClick={() => scrollTo(howItWorksRef)} />
       </div>
 
@@ -61,24 +61,32 @@ export default function LandingPage() {
       <WhatWeDo />
 
       {/* How It Works */}
-      <HowItWorks ref={howItWorksRef} />
+      <div id="how-it-works">
+        <HowItWorks ref={howItWorksRef} />
+      </div>
 
       {/* Platform Preview */}
-      <PlatformPreview />
+      <div id="platform">
+        <PlatformPreview />
+      </div>
 
       {/* Who This Is For */}
-      <WhoThisIsFor />
+      <div id="who-this-is-for">
+        <WhoThisIsFor />
+      </div>
 
       {/* Education / Mentorship */}
-      <Education />
+      <div id="education">
+        <Education />
+      </div>
 
       {/* Early Access / Contact Form */}
-      <div ref={earlyAccessRef}>
+      <div id="early-access" ref={earlyAccessRef}>
         <EarlyAccess />
       </div>
 
       {/* FAQ */}
-      <div ref={faqRef}>
+      <div id="faq" ref={faqRef}>
         <FAQ />
       </div>
 

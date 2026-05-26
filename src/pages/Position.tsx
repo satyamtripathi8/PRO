@@ -1,12 +1,15 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, RefreshCw, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw, ArrowUpRight, ArrowDownRight, BarChart3, History } from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts";
 
 import PositionCard from "../components/positions/PositionCard";
 import OrdersCard from "../components/positions/OrdersCard";
 
 import type { Position, Order, OrderTab } from "../types/trading";
-import { ordersApi, walletApi } from "../lib/api";
+import { ordersApi, walletApi, portfolioApi } from "../lib/api";
 import { useMarketData } from "../hooks/useMarketData";
 
 // Company logo URLs (same as Trade.tsx)
@@ -100,12 +103,28 @@ function CompanyLogo({ symbol, size = 40 }: { symbol: string; size?: number }) {
 
 export default function Positions() {
   const [tab, setTab] = useState<OrderTab>("stocks");
+  const [analyticsTab, setAnalyticsTab] = useState<"analytics" | "history">("analytics");
   const navigate = useNavigate();
   const [rawHoldings, setRawHoldings] = useState<any[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [prevPnL, setPrevPnL] = useState<number>(0);
   const [pnlDirection, setPnlDirection] = useState<'up' | 'down' | 'neutral'>('neutral');
+
+  // ── Realised P&L ──────────────────────────────────────────────────────────
+  const [realisedPnL, setRealisedPnL] = useState<number>(0);
+  const [realisedLoading, setRealisedLoading] = useState(false);
+
+  // ── Portfolio analytics state ──────────────────────────────────────────────
+  const [overview, setOverview] = useState<any>(null);
+  const [equityHistory, setEquityHistory] = useState<any[]>([]);
+  const [drawdown, setDrawdown] = useState<any>(null);
+  const [tradeHistory, setTradeHistory] = useState<any[]>([]);
+  const [tradeTotal, setTradeTotal] = useState(0);
+  const [tradePage, setTradePage] = useState(1);
+  const [tradeLoading, setTradeLoading] = useState(false);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [historyDays, setHistoryDays] = useState(30);
 
   // Fetch all holding symbols and get live prices
   const holdingSymbols = useMemo(
@@ -139,6 +158,57 @@ export default function Positions() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Fetch realised P&L independently
+  useEffect(() => {
+    setRealisedLoading(true);
+    portfolioApi.getRealizedPnL(historyDays)
+      .then(res => {
+        const data = res.data ?? res;
+        // API may return { totalRealizedPnL } or { realizedPnL } or a number directly
+        const val = data?.totalRealizedPnL ?? data?.realizedPnL ?? data?.total ?? 0;
+        setRealisedPnL(Number(val));
+      })
+      .catch(() => {
+        // Fallback: use overview.realizedPnL if available
+        if (overview?.realizedPnL != null) setRealisedPnL(Number(overview.realizedPnL));
+      })
+      .finally(() => setRealisedLoading(false));
+  }, [historyDays]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Portfolio analytics fetchers ───────────────────────────────────────────
+  const fetchAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    try {
+      const [ovRes, histRes, ddRes] = await Promise.all([
+        portfolioApi.getOverview(),
+        portfolioApi.getHistory(historyDays),
+        portfolioApi.getMaxDrawdown(historyDays),
+      ]);
+      setOverview(ovRes.data ?? null);
+      setEquityHistory(histRes.data?.data ?? []);
+      setDrawdown(ddRes.data ?? null);
+    } catch { /* ignore */ } finally {
+      setAnalyticsLoading(false);
+    }
+  }, [historyDays]);
+
+  const fetchTradeHistory = useCallback(async (page = 1) => {
+    setTradeLoading(true);
+    try {
+      const res = await portfolioApi.getTradeHistory({ days: historyDays, page, limit: 20 });
+      setTradeHistory(res.data?.data ?? []);
+      setTradeTotal(res.data?.meta?.total ?? 0);
+      setTradePage(page);
+    } catch { /* ignore */ } finally {
+      setTradeLoading(false);
+    }
+  }, [historyDays]);
+
+  useEffect(() => {
+    fetchAnalytics();
+    fetchTradeHistory(1);
+  }, [fetchAnalytics, fetchTradeHistory]);
 
   // Merge holdings with live LTP for real-time P&L
   const positions: Position[] = rawHoldings.map((h: any, i: number) => {
@@ -225,69 +295,109 @@ export default function Positions() {
         </div>
       </div>
 
-      {/* LIVE P&L HERO CARD */}
-      <section className={`relative overflow-hidden rounded-2xl p-6 transition-all duration-500 ${
-        totalPnL >= 0
-          ? 'bg-gradient-to-br from-green-500 to-emerald-600'
-          : 'bg-gradient-to-br from-red-500 to-rose-600'
-      }`}>
-        {/* Animated background */}
-        <div className="absolute inset-0 opacity-10">
-          <div className={`absolute inset-0 ${pnlDirection === 'up' ? 'animate-pulse' : ''}`}>
-            {totalPnL >= 0 ? (
-              <TrendingUp className="absolute right-4 top-4 w-32 h-32 text-white" />
-            ) : (
-              <TrendingDown className="absolute right-4 top-4 w-32 h-32 text-white" />
-            )}
-          </div>
-        </div>
+      {/* P&L HERO — Unrealised + Realised side by side */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        <div className="relative z-10 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium opacity-90">Total Unrealised P&amp;L</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-              pnlDirection === 'up' ? 'bg-white/30 animate-bounce' :
-              pnlDirection === 'down' ? 'bg-white/30 animate-bounce' : 'bg-white/20'
-            }`}>
-              {pnlDirection === 'up' && <ArrowUpRight className="inline w-3 h-3" />}
-              {pnlDirection === 'down' && <ArrowDownRight className="inline w-3 h-3" />}
-              LIVE
-            </span>
+        {/* Unrealised P&L card */}
+        <div className={`relative overflow-hidden rounded-2xl p-5 transition-all duration-500 ${
+          totalPnL >= 0
+            ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+            : 'bg-gradient-to-br from-red-500 to-rose-600'
+        }`}>
+          <div className="absolute inset-0 opacity-10">
+            {totalPnL >= 0
+              ? <TrendingUp className="absolute right-3 top-3 w-24 h-24 text-white" />
+              : <TrendingDown className="absolute right-3 top-3 w-24 h-24 text-white" />}
           </div>
-
-          <div className="flex items-baseline gap-4">
-            <p className={`text-4xl md:text-5xl font-bold tracking-tight transition-transform duration-300 ${
+          <div className="relative z-10 text-white">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-medium opacity-90">Unrealised P&amp;L</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 ${
+                pnlDirection !== 'neutral' ? 'animate-bounce' : ''
+              }`}>
+                {pnlDirection === 'up' && <ArrowUpRight className="inline w-3 h-3" />}
+                {pnlDirection === 'down' && <ArrowDownRight className="inline w-3 h-3" />}
+                LIVE
+              </span>
+            </div>
+            <p className={`text-3xl md:text-4xl font-bold tracking-tight transition-transform duration-300 ${
               pnlDirection !== 'neutral' ? 'scale-105' : ''
             }`}>
               {totalPnL >= 0 ? '+' : ''}₹{fmt(Math.abs(totalPnL))}
             </p>
-            <span className={`text-lg font-semibold px-3 py-1 rounded-full ${
-              pnlPct >= 0 ? 'bg-white/20' : 'bg-white/20'
-            }`}>
-              {pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(2)}%
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div>
-              <p className="text-sm opacity-75">Invested</p>
-              <p className="text-lg font-semibold">₹{fmt(totalInvested)}</p>
-            </div>
-            <div>
-              <p className="text-sm opacity-75">Current</p>
-              <p className="text-lg font-semibold">₹{fmt(totalCurrent)}</p>
-            </div>
-            <div>
-              <p className="text-sm opacity-75">Holdings</p>
-              <p className="text-lg font-semibold flex items-center gap-2">
-                {positions.length}
-                <span className="text-xs opacity-75">
-                  ({gainers} <span className="text-green-200">↑</span> · {losers} <span className="text-red-200">↓</span>)
-                </span>
-              </p>
+            <p className="text-sm font-semibold mt-1 opacity-90">
+              {pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(2)}% on ₹{fmt(totalInvested)}
+            </p>
+            <div className="grid grid-cols-3 gap-3 mt-4">
+              <div>
+                <p className="text-xs opacity-70">Invested</p>
+                <p className="text-sm font-semibold">₹{fmt(totalInvested)}</p>
+              </div>
+              <div>
+                <p className="text-xs opacity-70">Current</p>
+                <p className="text-sm font-semibold">₹{fmt(totalCurrent)}</p>
+              </div>
+              <div>
+                <p className="text-xs opacity-70">Holdings</p>
+                <p className="text-sm font-semibold">
+                  {positions.length}
+                  <span className="text-xs ml-1 opacity-80">
+                    ({gainers}<span className="text-green-200">↑</span> {losers}<span className="text-red-200">↓</span>)
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Realised P&L card */}
+        <div className={`relative overflow-hidden rounded-2xl p-5 transition-all duration-500 ${
+          realisedPnL >= 0
+            ? 'bg-gradient-to-br from-blue-600 to-indigo-700'
+            : 'bg-gradient-to-br from-orange-500 to-red-600'
+        }`}>
+          <div className="absolute inset-0 opacity-10">
+            {realisedPnL >= 0
+              ? <BarChart3 className="absolute right-3 top-3 w-24 h-24 text-white" />
+              : <TrendingDown className="absolute right-3 top-3 w-24 h-24 text-white" />}
+          </div>
+          <div className="relative z-10 text-white">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-medium opacity-90">Realised P&amp;L</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20">
+                Last {historyDays}D
+              </span>
+              {realisedLoading && <RefreshCw size={12} className="animate-spin opacity-70" />}
+            </div>
+            <p className="text-3xl md:text-4xl font-bold tracking-tight">
+              {realisedPnL >= 0 ? '+' : ''}₹{fmt(Math.abs(realisedPnL))}
+            </p>
+            <p className="text-sm font-semibold mt-1 opacity-90">
+              Closed / booked profits
+            </p>
+            <div className="grid grid-cols-3 gap-3 mt-4">
+              <div>
+                <p className="text-xs opacity-70">Net P&amp;L</p>
+                <p className={`text-sm font-semibold ${totalPnL + realisedPnL >= 0 ? '' : 'text-red-200'}`}>
+                  {totalPnL + realisedPnL >= 0 ? '+' : ''}₹{fmt(Math.abs(totalPnL + realisedPnL))}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs opacity-70">Win Rate</p>
+                <p className="text-sm font-semibold">
+                  {overview?.winRate != null ? `${overview.winRate.toFixed(1)}%` : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs opacity-70">Trades</p>
+                <p className="text-sm font-semibold">
+                  {overview?.totalTrades ?? '—'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       {/* QUICK STATS */}
@@ -365,6 +475,294 @@ export default function Positions() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PositionCard pnl={totalPnL} positions={positions} logos={COMPANY_LOGOS} />
         <OrdersCard tab={tab} onTabChange={setTab} orders={orders} logos={COMPANY_LOGOS} />
+      </section>
+
+      {/* ── PORTFOLIO ANALYTICS SECTION ──────────────────────────────────── */}
+      <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        {/* Tab bar */}
+        <div className="flex items-center justify-between px-4 border-b border-slate-100">
+          <div className="flex">
+            {([
+              { key: "analytics", label: "Analytics", icon: <BarChart3 size={14} /> },
+              { key: "history", label: "Trade History", icon: <History size={14} /> },
+            ] as const).map(t => (
+              <button
+                key={t.key}
+                onClick={() => setAnalyticsTab(t.key)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  analyticsTab === t.key
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {t.icon}{t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Days selector */}
+          <div className="flex items-center gap-1 pr-2">
+            {([7, 30, 90] as const).map(d => (
+              <button
+                key={d}
+                onClick={() => setHistoryDays(d)}
+                className={`px-2.5 py-1 text-xs rounded-lg font-medium transition-colors ${
+                  historyDays === d
+                    ? "bg-blue-500 text-white"
+                    : "text-slate-500 hover:bg-slate-100"
+                }`}
+              >
+                {d}D
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Analytics tab ── */}
+        {analyticsTab === "analytics" && (
+          <div className="p-4 space-y-5">
+            {analyticsLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[1,2,3,4].map(i => <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />)}
+              </div>
+            ) : (
+              <>
+                {/* Metric cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    {
+                      label: "Realized P&L",
+                      value: overview?.realizedPnL ?? 0,
+                      format: (v: number) => `${v >= 0 ? "+" : ""}₹${fmt(Math.abs(v))}`,
+                      color: (v: number) => v >= 0 ? "text-green-600" : "text-red-500",
+                    },
+                    {
+                      label: "Win Rate",
+                      value: overview?.winRate ?? 0,
+                      format: (v: number) => `${v.toFixed(1)}%`,
+                      color: (v: number) => v >= 50 ? "text-green-600" : "text-orange-500",
+                      sub: overview ? `${overview.winCount}W / ${overview.lossCount}L` : "",
+                    },
+                    {
+                      label: "Max Drawdown",
+                      value: drawdown?.maxDrawdownPct ?? 0,
+                      format: (v: number) => `-${v.toFixed(2)}%`,
+                      color: () => "text-red-500",
+                      sub: drawdown?.maxDrawdown ? `₹${fmt(drawdown.maxDrawdown)}` : "",
+                    },
+                    {
+                      label: "Avg Trade P&L",
+                      value: overview?.avgTradePnL ?? 0,
+                      format: (v: number) => `${v >= 0 ? "+" : ""}₹${fmt(Math.abs(v))}`,
+                      color: (v: number) => v >= 0 ? "text-green-600" : "text-red-500",
+                      sub: overview ? `${overview.totalTrades} trades` : "",
+                    },
+                  ].map(card => (
+                    <div key={card.label} className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                      <p className="text-xs text-slate-500 mb-1">{card.label}</p>
+                      <p className={`text-xl font-bold ${card.color(card.value)}`}>
+                        {card.format(card.value)}
+                      </p>
+                      {card.sub && <p className="text-xs text-slate-400 mt-0.5">{card.sub}</p>}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Best / Worst trade row */}
+                {overview && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-green-50 border border-green-100 rounded-xl p-3">
+                      <p className="text-xs text-slate-500 mb-0.5">Best Trade</p>
+                      <p className="text-lg font-bold text-green-600">
+                        {overview.bestTrade != null ? `+₹${fmt(overview.bestTrade)}` : "—"}
+                      </p>
+                    </div>
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+                      <p className="text-xs text-slate-500 mb-0.5">Worst Trade</p>
+                      <p className="text-lg font-bold text-red-500">
+                        {overview.worstTrade != null ? `₹${fmt(overview.worstTrade)}` : "—"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Equity curve */}
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-3">Equity Curve (Daily P&L)</p>
+                  {equityHistory.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400 bg-slate-50 rounded-xl">
+                      <BarChart3 size={32} className="mb-2 opacity-30" />
+                      <p className="text-sm">No portfolio history yet. Trade to generate data.</p>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={200}>
+                      <AreaChart data={equityHistory} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 11, fill: "#94a3b8" }}
+                          tickFormatter={d => d.slice(5)}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: "#94a3b8" }}
+                          tickFormatter={v => `₹${v >= 1000 ? `${(v/1000).toFixed(1)}k` : v}`}
+                          width={60}
+                        />
+                        <Tooltip
+                          formatter={(v: any) => [`₹${fmt(v)}`, "Total P&L"]}
+                          labelFormatter={l => `Date: ${l}`}
+                          contentStyle={{ fontSize: 12, borderRadius: 8 }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="totalPnL"
+                          stroke="#3b82f6"
+                          strokeWidth={2}
+                          fill="url(#pnlGrad)"
+                          dot={false}
+                          activeDot={{ r: 4 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                {/* Unrealized breakdown */}
+                {overview?.unrealizedBreakdown?.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-slate-700 mb-2">Unrealized P&L Breakdown</p>
+                    <div className="overflow-x-auto rounded-xl border border-slate-100">
+                      <table className="w-full text-sm">
+                        <thead className="bg-slate-50">
+                          <tr className="text-slate-500 text-xs">
+                            <th className="text-left px-3 py-2">Symbol</th>
+                            <th className="text-right px-3 py-2">Qty</th>
+                            <th className="text-right px-3 py-2">Avg Price</th>
+                            <th className="text-right px-3 py-2">CMP</th>
+                            <th className="text-right px-3 py-2">Unrealized P&L</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {overview.unrealizedBreakdown.map((row: any) => (
+                            <tr key={row.symbol} className="border-t border-slate-50 hover:bg-slate-50">
+                              <td className="px-3 py-2 font-medium">{row.symbol}</td>
+                              <td className="px-3 py-2 text-right text-slate-600">{row.quantity}</td>
+                              <td className="px-3 py-2 text-right text-slate-600">₹{fmt(row.avgPrice)}</td>
+                              <td className="px-3 py-2 text-right text-slate-600">₹{fmt(row.currentPrice)}</td>
+                              <td className={`px-3 py-2 text-right font-semibold ${row.unrealizedPnL >= 0 ? "text-green-600" : "text-red-500"}`}>
+                                {row.unrealizedPnL >= 0 ? "+" : ""}₹{fmt(row.unrealizedPnL)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Trade History tab ── */}
+        {analyticsTab === "history" && (
+          <div className="p-4 space-y-3">
+            {tradeLoading ? (
+              <div className="space-y-2">
+                {[1,2,3,4,5].map(i => <div key={i} className="h-12 bg-slate-100 rounded-lg animate-pulse" />)}
+              </div>
+            ) : tradeHistory.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                <History size={32} className="mb-2 opacity-30" />
+                <p className="text-sm">No closed trades in this period.</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto rounded-xl border border-slate-100">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50">
+                      <tr className="text-slate-500 text-xs">
+                        <th className="text-left px-3 py-2">Symbol</th>
+                        <th className="text-left px-3 py-2">Side</th>
+                        <th className="text-right px-3 py-2">Qty</th>
+                        <th className="text-right px-3 py-2">Entry</th>
+                        <th className="text-right px-3 py-2">Exit</th>
+                        <th className="text-right px-3 py-2">P&L</th>
+                        <th className="text-right px-3 py-2">Closed At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tradeHistory.map((t: any) => (
+                        <tr key={t.id} className="border-t border-slate-50 hover:bg-slate-50">
+                          <td className="px-3 py-2.5 font-medium">{t.symbol}</td>
+                          <td className="px-3 py-2.5">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                              t.side === "BUY"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-600"
+                            }`}>
+                              {t.side}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5 text-right text-slate-600">{t.quantity}</td>
+                          <td className="px-3 py-2.5 text-right text-slate-600">₹{fmt(t.entryPrice)}</td>
+                          <td className="px-3 py-2.5 text-right text-slate-600">
+                            {t.exitPrice != null ? `₹${fmt(t.exitPrice)}` : "—"}
+                          </td>
+                          <td className={`px-3 py-2.5 text-right font-semibold ${
+                            t.pnl == null ? "text-slate-400" : t.pnl >= 0 ? "text-green-600" : "text-red-500"
+                          }`}>
+                            {t.pnl != null
+                              ? `${t.pnl >= 0 ? "+" : ""}₹${fmt(Math.abs(t.pnl))}`
+                              : "—"}
+                          </td>
+                          <td className="px-3 py-2.5 text-right text-slate-400 text-xs">
+                            {t.closedAt
+                              ? new Date(t.closedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {tradeTotal > 20 && (
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-slate-400">{tradeTotal} trades total</span>
+                    <div className="flex gap-2">
+                      <button
+                        disabled={tradePage === 1}
+                        onClick={() => fetchTradeHistory(tradePage - 1)}
+                        className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+                      >
+                        ← Prev
+                      </button>
+                      <span className="flex items-center text-xs text-slate-500 px-2">
+                        {tradePage} / {Math.ceil(tradeTotal / 20)}
+                      </span>
+                      <button
+                        disabled={tradePage >= Math.ceil(tradeTotal / 20)}
+                        onClick={() => fetchTradeHistory(tradePage + 1)}
+                        className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </section>
 
     </main>

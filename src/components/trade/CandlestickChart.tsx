@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { marketApi } from '../../lib/api';
-import { RefreshCw, Maximize2 } from 'lucide-react';
+import { RefreshCw, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
 import { WS_BASE_URL } from '../../lib/config';
 
 interface CandleData {
@@ -194,6 +194,24 @@ export default function CandlestickChart({ symbol, range = '1D', height = 400, l
 
   const isUp = (priceChange?.value ?? 0) >= 0;
 
+  const handleZoomIn = () => {
+    if (!chartRef.current) return;
+    const range = chartRef.current.timeScale().getVisibleLogicalRange();
+    if (!range) return;
+    const center = (range.from + range.to) / 2;
+    const half = (range.to - range.from) * 0.35;
+    chartRef.current.timeScale().setVisibleLogicalRange({ from: center - half, to: center + half });
+  };
+
+  const handleZoomOut = () => {
+    if (!chartRef.current) return;
+    const range = chartRef.current.timeScale().getVisibleLogicalRange();
+    if (!range) return;
+    const center = (range.from + range.to) / 2;
+    const half = (range.to - range.from) * 0.65;
+    chartRef.current.timeScale().setVisibleLogicalRange({ from: center - half, to: center + half });
+  };
+
   return (
     <div className="relative w-full" style={{ height }}>
       {/* Header */}
@@ -225,16 +243,34 @@ export default function CandlestickChart({ symbol, range = '1D', height = 400, l
           {loading && <RefreshCw size={16} className="text-blue-500 animate-spin" />}
         </div>
 
-        {onFullscreen && (
+        <div className="flex items-center gap-1">
           <button
-            onClick={onFullscreen}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-            title="Fullscreen (F)"
-            aria-label="Fullscreen chart"
+            onClick={handleZoomIn}
+            className="p-1.5 bg-white/90 backdrop-blur-sm hover:bg-gray-100 rounded-lg shadow-sm transition-colors duration-200"
+            title="Zoom In"
+            aria-label="Zoom in"
           >
-            <Maximize2 size={18} className="text-gray-600 hover:text-gray-900" />
+            <ZoomIn size={16} className="text-gray-600" />
           </button>
-        )}
+          <button
+            onClick={handleZoomOut}
+            className="p-1.5 bg-white/90 backdrop-blur-sm hover:bg-gray-100 rounded-lg shadow-sm transition-colors duration-200"
+            title="Zoom Out"
+            aria-label="Zoom out"
+          >
+            <ZoomOut size={16} className="text-gray-600" />
+          </button>
+          {onFullscreen && (
+            <button
+              onClick={onFullscreen}
+              className="p-1.5 bg-white/90 backdrop-blur-sm hover:bg-gray-100 rounded-lg shadow-sm transition-colors duration-200"
+              title="Fullscreen (F)"
+              aria-label="Fullscreen chart"
+            >
+              <Maximize2 size={16} className="text-gray-600 hover:text-gray-900" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Error */}
