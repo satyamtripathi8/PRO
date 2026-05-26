@@ -1,35 +1,46 @@
-import AuthLayout from './components/auth/AuthLayout'
-import LoginPage from './app/authform/login'
-import PhoneCard from './app/authform/phone'
-import Verify from './app/authform/verify'
-import SetPin from './app/authform/setpin'
-import './App.css'
-import { Route, Routes, Navigate } from 'react-router-dom'
-import { PanVerify } from './app/authform/PAN'
-import { BankDetail } from './app/authform/bankdetail'
-import MaritalStatus from './app/authform/MaritalStatus'
-import AnualIncome from './app/authform/anualincome'
-import Occupations from './app/authform/occupation'
-import ExperienceForm from './app/authform/experience'
-import ConfirmPin from './app/authform/confirm'
-import Dashboard from './pages/Dashboard'
-import MainLayout from './components/layout/Mainlayout'
-import Trade from './pages/Trade'
-import FullscreenChart from './pages/FullscreenChart'
-import Profile from './pages/Profile'
-import Learn from './pages/Learn'
-import Analytics from './pages/Analytics'
-import Mentorship from './pages/Mentorship'
-import Positions from './pages/Position'
-import OptionChainPage from './pages/OptionChainPage'
-import Sell from './pages/Sell'
-import AiChat from './pages/AiChat'
-import SettingsPage from './pages/SettingsPage'
-import LeaderboardPage from './pages/LeaderboardPage'
-import AdminDashboard from './pages/AdminDashboard'
-import LandingPage from './pages/LandingPage'
-import { useAuth } from './context/AuthContext'
+// import AuthLayout from './components/auth/AuthLayout'
+// import LoginPage from './app/authform/login'
+// import PhoneCard from './app/authform/phone'
+// import Verify from './app/authform/verify'
+// import SetPin from './app/authform/setpin'
+// import './App.css'
+// import { Route, Routes, Navigate } from 'react-router-dom'
+// import { PanVerify } from './app/authform/PAN'
+// import { BankDetail } from './app/authform/bankdetail'
+// import MaritalStatus from './app/authform/MaritalStatus'
+// import AnualIncome from './app/authform/anualincome'
+// import Occupations from './app/authform/occupation'
+// import ExperienceForm from './app/authform/experience'
+// import ConfirmPin from './app/authform/confirm'
+// import Dashboard from './pages/Dashboard'
+// import MainLayout from './components/layout/Mainlayout'
+// import Trade from './pages/Trade'
+// import FullscreenChart from './pages/FullscreenChart'
+// import Profile from './pages/Profile'
+// import Learn from './pages/Learn'
+// import Analytics from './pages/Analytics'
+// import Mentorship from './pages/Mentorship'
+// import Positions from './pages/Position'
+// import OptionChainPage from './pages/OptionChainPage'
+// import Sell from './pages/Sell'
+// import AiChat from './pages/AiChat'
+// import SettingsPage from './pages/SettingsPage'
+// import LeaderboardPage from './pages/LeaderboardPage'
+// import AdminDashboard from './pages/AdminDashboard'
+// import LandingPage from './pages/LandingPage'
+// import { useAuth } from './context/AuthContext'
+import HoldingPage from './pages/HoldingPage'
 
+// ──────────────────────────────────────────────────────────
+// HOLDING MODE: All routes render the cinematic holding page
+// while the premium frontend is being rebuilt.
+//
+// To restore the full app, uncomment the imports above,
+// remove the HoldingPage import, and restore the original
+// App function below.
+// ──────────────────────────────────────────────────────────
+
+/*
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>;
@@ -44,8 +55,12 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   if (user.role !== 'ADMIN') return <Navigate to="/Home" replace />;
   return <>{children}</>;
 }
+*/
 
 function App() {
+  return <HoldingPage />;
+
+  /* ── Original routing (restore when ready) ──
   return (
     <>
       <Routes>
@@ -83,6 +98,7 @@ function App() {
       </Routes>
     </>
   )
+  */
 }
 
 export default App
